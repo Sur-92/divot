@@ -1,0 +1,39 @@
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# Xcode — build output
+build/
+DerivedData/
+*.app
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+# Xcode — user-specific state (inside the .xcodeproj)
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# Swift Package Manager
+.swiftpm/xcode/xcuserdata/
+.build/
+
+# Xcode shared runtime artifacts
+*.moved-aside
+
+# Tuist / AppCode / VS Code (future-proofing)
+.idea/
+.vscode/
+
+# Logs & crash reports that might land in the tree
+*.log
+*.ips
+
+# Local secrets — none today, but don't let one sneak in
+*.env
+.env.*
+secrets.plist
