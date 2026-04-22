@@ -37,3 +37,16 @@ xcuserdata/
 *.env
 .env.*
 secrets.plist
+
+# SwiftData / SQLite — the store lives in ~/Library/Containers/...
+# Nothing DB-shaped should ever be in the repo tree, but if one gets
+# copied in for inspection don't let it be committed.
+*.store
+*.store-shm
+*.store-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.db-shm
+*.db-wal
