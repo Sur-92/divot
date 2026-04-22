@@ -145,6 +145,51 @@ enum CourseSeeder {
     /// Replaces a pre-existing Royal Oaks record with the authoritative
     /// PDF-based data when it's running on an older seed (pre-yardage,
     /// pre-handicap, or old Gold/Silver/Bronze tee names).
+    /// Fairview was originally seeded with all hole handicap indices = 0.
+    /// Backfills from the official scorecard at
+    /// https://www.fairview.distinctgolf.com/scorecard-ratings/ — both the
+    /// course's CourseHole rows and any existing Round's snapshotted
+    /// handicaps that were created before the fix.
+    static func migrateFairviewHandicapsIfNeeded(context: ModelContext) {
+        let fetch = FetchDescriptor<Course>(
+            predicate: #Predicate { $0.name == "Fairview Golf Course" }
+        )
+        guard let course = try? context.fetch(fetch).first else { return }
+
+        // Canonical handicap indices per hole (1-based → 0-based array),
+        // men's Blue/Back tee row from the official scorecard image.
+        let canonicalHcp = [17, 15,  1,  5, 7, 11,  9,  3, 13,
+                            14,  4,  2, 18, 6,  8, 12, 10, 16]
+
+        var touchedCourse = false
+        for hole in course.holes where (1...18).contains(hole.number) {
+            let expected = canonicalHcp[hole.number - 1]
+            if hole.handicapIndex != expected {
+                hole.handicapIndex = expected
+                touchedCourse = true
+            }
+        }
+
+        var touchedRounds = 0
+        for round in course.rounds {
+            for hole in round.holes where (1...18).contains(hole.number) {
+                let expected = canonicalHcp[hole.number - 1]
+                if hole.handicapIndex != expected {
+                    hole.handicapIndex = expected
+                    touchedRounds += 1
+                }
+            }
+        }
+
+        if touchedCourse || touchedRounds > 0 {
+            do {
+                try context.save()
+            } catch {
+                print("CourseSeeder Fairview hcp migrate failed: \(error)")
+            }
+        }
+    }
+
     /// Iron Valley was originally seeded with all hole handicap indices = 0
     /// because the scorecard hadn't been verified. Now that we have the
     /// official values (from ironvalley.com's scorecard image), backfill:
@@ -381,12 +426,17 @@ enum CourseSeeder {
         course.latitude = 40.3067
         course.longitude = -76.4422
 
-        // Par per hole — front 4-4-4-5-4-3-5-4-3 (36), back 4-4-4-3-5-3-4-5-3 (35)
+        // Par + handicap index per hole from Fairview's official scorecard
+        // (https://www.fairview.distinctgolf.com/scorecard-ratings/).
+        // Front 4-4-4-5-4-3-5-4-3 (36) · Back 4-4-4-3-5-3-4-5-3 (35)
+        // Handicap row from Blue/Back tees (men's). All 18 unique, sum=171.
         let pars = [4, 4, 4, 5, 4, 3, 5, 4, 3,
                     4, 4, 4, 3, 5, 3, 4, 5, 3]
-        // Handicap indices unknown — user can fill in from a scorecard.
+        let hcps = [17, 15,  1,  5, 7, 11,  9,  3, 13,
+                    14,  4,  2, 18, 6,  8, 12, 10, 16]
+
         for i in 0..<18 {
-            let hole = CourseHole(number: i + 1, par: pars[i])
+            let hole = CourseHole(number: i + 1, par: pars[i], handicapIndex: hcps[i])
             hole.course = course
             course.holes.append(hole)
         }

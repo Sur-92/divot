@@ -25,6 +25,7 @@ struct DivotApp: App {
             CourseSeeder.seedIronValleyIfNeeded(context: container.mainContext)
             CourseSeeder.migrateIronValleyHandicapsIfNeeded(context: container.mainContext)
             CourseSeeder.seedFairviewIfNeeded(context: container.mainContext)
+            CourseSeeder.migrateFairviewHandicapsIfNeeded(context: container.mainContext)
             CourseSeeder.seedPineMeadowsIfNeeded(context: container.mainContext)
             CourseSeeder.seedDauphinHighlandsIfNeeded(context: container.mainContext)
             CourseSeeder.seedBlueMountainIfNeeded(context: container.mainContext)
