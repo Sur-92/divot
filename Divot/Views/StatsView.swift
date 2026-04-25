@@ -402,6 +402,12 @@ struct StatsView: View {
                         ?? "from shot log"
                 )
                 StatCard(
+                    label: "Average Drive",
+                    value: b.avgDrive.map { "\($0.distance)" } ?? "—",
+                    sublabel: b.avgDrive.map { "yds · \($0.sampleCount) drives (trimmed)" }
+                        ?? "need 3+ logged drives"
+                )
+                StatCard(
                     label: "Holes in One",
                     value: "\(b.holeInOneCount)",
                     sublabel: b.holeInOneCount == 0 ? "still chasing" : "pure magic"
@@ -475,6 +481,7 @@ struct StatsView: View {
 
 struct PersonalBests {
     var longestDrive: (distance: Int, round: Round)?
+    var avgDrive: (distance: Int, sampleCount: Int)?
     var holeInOneCount: Int
     var eagleCount: Int
     var birdieCount: Int
@@ -485,6 +492,7 @@ struct PersonalBests {
 
     static func compute(from rounds: [Round]) -> PersonalBests {
         var longestDrive: (distance: Int, round: Round)?
+        var driverDistances: [Int] = []
         var hole1Count = 0
         var eagleCount = 0
         var birdieCount = 0
@@ -539,6 +547,8 @@ struct PersonalBests {
                 for (i, shot) in shots.enumerated() {
                     guard shot.club == .driver, shot.distance > 0 else { continue }
 
+                    driverDistances.append(shot.distance)
+
                     let landedFairway: Bool
                     if i + 1 < shots.count {
                         landedFairway = shots[i + 1].lie == .fairway
@@ -553,8 +563,19 @@ struct PersonalBests {
             }
         }
 
+        // Trimmed average drive: drop the single longest and single shortest,
+        // average the rest. Needs at least 3 samples (so one stays after trim).
+        var avgDrive: (distance: Int, sampleCount: Int)?
+        if driverDistances.count >= 3 {
+            let sorted = driverDistances.sorted()
+            let trimmed = sorted.dropFirst().dropLast()
+            let sum = trimmed.reduce(0, +)
+            avgDrive = (Int((Double(sum) / Double(trimmed.count)).rounded()), trimmed.count)
+        }
+
         return PersonalBests(
             longestDrive: longestDrive,
+            avgDrive: avgDrive,
             holeInOneCount: hole1Count,
             eagleCount: eagleCount,
             birdieCount: birdieCount,

@@ -112,10 +112,21 @@ struct HoleRow: View {
 
     private var scoreColor: Color {
         guard hole.score > 0 else { return Theme.primaryText }
-        let diff = hole.score - hole.par
-        if diff <= -1 { return Theme.accent }
-        if diff == 0 { return Theme.primaryText }
-        return Theme.dim
+        return ScoreMark.color(for: hole.score - hole.par)
+    }
+
+    /// Putts color convention:
+    ///   0 (chip-in) → light blue · 1 → light green · 2 → white
+    ///   3 → red · 4+ → black (paired with bold weight at the call site)
+    private var puttsColor: Color {
+        switch hole.putts {
+        case ..<0:  return Theme.primaryText
+        case 0:     return Color(red: 0.55, green: 0.80, blue: 0.98)    // light blue
+        case 1:     return Color(red: 0.55, green: 0.88, blue: 0.60)    // light green
+        case 2:     return Theme.primaryText                            // white
+        case 3:     return Color(red: 0.92, green: 0.35, blue: 0.32)    // red
+        default:    return .black                                       // 4+
+        }
     }
 
     private var scoreToParText: String {
@@ -184,8 +195,10 @@ struct HoleRow: View {
             DotCheckbox(isOn: $hole.greenInRegulation)
                 .frame(width: 44)
 
-            // PUTTS (editable)
-            inlineInt(value: $hole.putts, width: 56)
+            // PUTTS (editable) — color-coded: 0 chip-in, 1 one-putt, 2 neutral, 3 warn, 4+ bad
+            inlineInt(value: $hole.putts, width: 56,
+                      color: puttsColor,
+                      bold: hole.putts >= 4)
 
             // NOTES (flex)
             TextField("", text: $hole.notes, prompt: Text("shot notes").foregroundStyle(Theme.dimmer))
@@ -227,16 +240,35 @@ struct HoleRow: View {
 //   score − par  = −1   → single circle (birdie)
 //   score − par  =  0   → no shape     (par)
 //   score − par  = +1   → single square (bogey)
-//   score − par ≥ +2   → double square (double bogey or worse)
+//   score − par  = +2   → double square (double bogey)
+//   score − par ≥ +3   → triple square (triple bogey or worse)
 
 struct ScoreMark: View {
     let score: Int
     let par: Int
 
     private let outerSize: CGFloat = 30
+    private let middleSize: CGFloat = 26
     private let innerSize: CGFloat = 22
     private let outerWidth: CGFloat = 1.8
-    private let innerWidth: CGFloat = 1.4
+    private let middleWidth: CGFloat = 1.4
+    private let innerWidth: CGFloat = 1.2
+
+    /// Color-by-score convention used by both the score number and the mark:
+    ///   eagle (−2+) → light blue · birdie (−1) → light green · par → white
+    ///   bogey (+1) → muted yellow · double (+2) → orange · triple+ → red
+    static func color(for diff: Int) -> Color {
+        if diff <= -2 { return Color(red: 0.55, green: 0.80, blue: 0.98) }   // light blue
+        if diff == -1 { return Color(red: 0.55, green: 0.88, blue: 0.60) }   // light green
+        if diff ==  0 { return Theme.primaryText }                           // white
+        if diff ==  1 { return Color(red: 0.95, green: 0.88, blue: 0.40) }   // yellow
+        if diff ==  2 { return Color(red: 0.98, green: 0.55, blue: 0.22) }   // orange
+        return               Color(red: 0.92, green: 0.35, blue: 0.32)       // red (+3+)
+    }
+
+    private var shapeColor: Color {
+        ScoreMark.color(for: score - par)
+    }
 
     var body: some View {
         Group {
@@ -252,45 +284,59 @@ struct ScoreMark: View {
                     EmptyView()
                 } else if diff == 1 {
                     singleSquare
-                } else {
+                } else if diff == 2 {
                     doubleSquare
+                } else {
+                    tripleSquare
                 }
             }
         }
     }
 
-    // Under-par shapes in amber to pop
     private var singleCircle: some View {
         Circle()
-            .stroke(Theme.accent, lineWidth: outerWidth)
+            .stroke(shapeColor, lineWidth: outerWidth)
             .frame(width: outerSize, height: outerSize)
     }
 
     private var doubleCircle: some View {
         ZStack {
             Circle()
-                .stroke(Theme.accent, lineWidth: outerWidth)
+                .stroke(shapeColor, lineWidth: outerWidth)
                 .frame(width: outerSize, height: outerSize)
             Circle()
-                .stroke(Theme.accent, lineWidth: innerWidth)
+                .stroke(shapeColor, lineWidth: innerWidth)
                 .frame(width: innerSize, height: innerSize)
         }
     }
 
-    // Over-par shapes in dimmed white — neutral so the number still reads
     private var singleSquare: some View {
         Rectangle()
-            .stroke(Color.white.opacity(0.75), lineWidth: outerWidth)
+            .stroke(shapeColor, lineWidth: outerWidth)
             .frame(width: outerSize, height: outerSize)
     }
 
     private var doubleSquare: some View {
         ZStack {
             Rectangle()
-                .stroke(Color.white.opacity(0.75), lineWidth: outerWidth)
+                .stroke(shapeColor, lineWidth: outerWidth)
                 .frame(width: outerSize, height: outerSize)
             Rectangle()
-                .stroke(Color.white.opacity(0.6), lineWidth: innerWidth)
+                .stroke(shapeColor.opacity(0.8), lineWidth: innerWidth)
+                .frame(width: innerSize, height: innerSize)
+        }
+    }
+
+    private var tripleSquare: some View {
+        ZStack {
+            Rectangle()
+                .stroke(shapeColor, lineWidth: outerWidth)
+                .frame(width: outerSize, height: outerSize)
+            Rectangle()
+                .stroke(shapeColor.opacity(0.85), lineWidth: middleWidth)
+                .frame(width: middleSize, height: middleSize)
+            Rectangle()
+                .stroke(shapeColor.opacity(0.70), lineWidth: innerWidth)
                 .frame(width: innerSize, height: innerSize)
         }
     }

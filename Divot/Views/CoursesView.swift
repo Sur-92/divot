@@ -255,7 +255,7 @@ struct CoursesView: View {
                 .font(.system(size: 11, weight: .semibold))
                 .tracking(2)
                 .foregroundStyle(Theme.primaryText)
-                .frame(width: 110, alignment: .leading)
+                .frame(width: 165, alignment: .leading)
             Spacer()
             teeField("YDS", value: "\(tee.yardage)")
             teeField("RATING", value: String(format: "%.1f", tee.courseRating))

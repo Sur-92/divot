@@ -83,6 +83,7 @@ struct ContentView: View {
             Color.clear.frame(height: 28)
 
             brandHeader
+                .offset(y: -50)
 
             gradientDivider
 
@@ -99,6 +100,7 @@ struct ContentView: View {
             .scrollContentBackground(.hidden)
             .listStyle(.sidebar)
             .environment(\.defaultMinListRowHeight, 38)
+            .offset(y: -75)
 
             Spacer(minLength: 0)
             gradientDivider
@@ -159,25 +161,13 @@ struct ContentView: View {
     }
 
     private var brandHeader: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("DIVOT")
-                .font(.system(size: 26, weight: .bold))
-                .tracking(8)
-                .foregroundStyle(Theme.primaryText)
-            HStack(spacing: 6) {
-                Rectangle()
-                    .fill(Theme.accent)
-                    .frame(width: 14, height: 1.5)
-                Text("YARDAGE BOOK")
-                    .font(.system(size: 9, weight: .medium))
-                    .tracking(3)
-                    .foregroundStyle(Theme.accent)
-            }
-        }
-        .padding(.horizontal, 18)
-        .padding(.top, 18)
-        .padding(.bottom, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Image("DivotLogo")
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 2)
+            .padding(.top, 0)
+            .padding(.bottom, 2)
     }
 
     private var footer: some View {
