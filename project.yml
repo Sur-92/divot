@@ -2,7 +2,7 @@ name: Divot
 options:
   bundleIdPrefix: com.roadandrock
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "26.0"
   createIntermediateGroups: true
   groupSortPosition: top
 
@@ -32,6 +32,8 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.sports"
         INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Divot uses your location to mark and measure shot distances on the course."
+        INFOPLIST_KEY_NSLocationUsageDescription: "Divot uses your location to mark and measure shot distances on the course."
         CURRENT_PROJECT_VERSION: 1
         MARKETING_VERSION: "0.1"
         SWIFT_EMIT_LOC_STRINGS: YES

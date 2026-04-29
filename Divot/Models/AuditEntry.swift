@@ -23,13 +23,13 @@ final class AuditEntry {
     /// The subject's idempotency key (UUID string), if applicable.
     var entityID: String
 
-    /// Human-readable label like "Royal Oaks Round · Apr 18".
+    /// Human-readable label like "Course Round · Apr 18".
     var entityLabel: String
 
     /// "insert", "update", "delete", "archive", "restore", "reorder", etc.
     var action: String
 
-    /// Human-readable summary like "Round created at Royal Oaks".
+    /// Human-readable summary like "Round created at the course".
     var summary: String
 
     /// Hex SHA-256 of the previous entry's `entryHash`, or "GENESIS" for row #1.

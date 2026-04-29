@@ -80,6 +80,15 @@ final class BagClub {
     /// Stable identity for this row — generated on insert, never changes.
     var idempotencyKey: String = ""
 
+    /// Soft-delete flag. Retired clubs are hidden from the main bag view
+    /// and don't count toward the 14-slot tally, but the data is preserved
+    /// (the user can restore them or hard-delete from the Retired list).
+    var isRetired: Bool = false
+
+    /// When the club was retired. Nil if active. Shown as a date stamp on
+    /// the retired list so it's clear when each club came out of the bag.
+    var retiredAt: Date?
+
     init(manufacturer: String,
          modelName: String,
          year: Int = 0,

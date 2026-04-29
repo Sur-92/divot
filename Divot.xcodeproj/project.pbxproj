@@ -8,11 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		053EA46405483B06BD21D6C3 /* WorldRankings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8069E59C2DEFF392CF324267 /* WorldRankings.swift */; };
+		07DD210424CBEB6C629F17CC /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22E99F04F81DCEB189B7C91D /* LocationService.swift */; };
 		11E7515075A46150E078724D /* RoundsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E7D9F927A182EB39D8BD94 /* RoundsListView.swift */; };
 		14E23E9F20E91A128D2A8C5C /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965DEA02B8696C263A15CFEC /* StatsView.swift */; };
 		1522161F4254A2B33861FAD9 /* Course.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1BCA384EC93A1EA6C9822FE /* Course.swift */; };
+		23A91F83A09392AEC461C6A1 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 153553D9D5AB882455302E09 /* AppIcon.icon */; };
 		40A730678A4C61699AF432B2 /* CourseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095AE98616C42A7930F80B5D /* CourseDetailView.swift */; };
 		47431F031F32739FD709308C /* AuditLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1203B4BF0F72796367CD28 /* AuditLogView.swift */; };
+		565678BA4383EB63A7C7BC86 /* VideoBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CFED35E91DF691AF2FDFF22 /* VideoBookmark.swift */; };
 		5ED3C6313526515E848D461E /* DivotApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005F1E89674C6321489F752F /* DivotApp.swift */; };
 		695D2D1C0EA5FD5780F6AA16 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4389AE8937B0FA5A7292C3B /* ContentView.swift */; };
 		6A11BC49C309E734BB48D18C /* YardagesScorecard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65659A298DD45A7109516747 /* YardagesScorecard.swift */; };
@@ -21,15 +24,18 @@
 		7DB4203C5404034B2267022C /* GolfQuotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2243B983C2026F3F9023B3D /* GolfQuotes.swift */; };
 		845E5E19535CC36C0AB95C60 /* GolfTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0050407D6EC258F9DB5131A7 /* GolfTypes.swift */; };
 		8753BD0B4CEA7B5B042E15CC /* CourseTee.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092385692DC35F10A02AA9CA /* CourseTee.swift */; };
+		8771A018EDE764865518B1C3 /* VideosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7084F90AFC5D627D38CDAC65 /* VideosView.swift */; };
 		8A256B14C5426E2A324DC179 /* PGAService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C54082B56DA2032128B198C /* PGAService.swift */; };
 		98B16ACF0A4FCC0553D160D7 /* AuditService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 429D5A52769CC7BD696A66CA /* AuditService.swift */; };
 		9DE0D6FEB9DA2BBE49E54659 /* CourseHole.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A7213C38A32FA730366F3C /* CourseHole.swift */; };
 		9E5E17A4E306564E41EB21B0 /* ClubCatalogSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A4290C6F1E4BE0307FB908 /* ClubCatalogSeeder.swift */; };
 		9FE709B9CF39CD753CFA1FA9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 99FDB78590AE1C6492CC6D60 /* Preview Assets.xcassets */; };
 		A17150D1F19F6E7370D966A5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 882F4787FB5102590434D8FF /* Assets.xcassets */; };
+		A59257B1970BFD16A97B45C1 /* TempCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96A3F7BAA9922AF2D2260372 /* TempCleaner.swift */; };
 		AFD569A3CA5EF4A54DF398AA /* Round.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA682369B82A6E6DB4C829E5 /* Round.swift */; };
 		B8129B17757296C3B7C7C1D9 /* PracticeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1950EC0533EDF3B251050A86 /* PracticeDetailView.swift */; };
 		BB2EC29FE2A54629E5571007 /* CourseLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504CD9B7FF956039D612DE42 /* CourseLogo.swift */; };
+		BD157239F570C1EF1DA38EB4 /* MapMeasureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E54C1DDCC0DF57248F2686 /* MapMeasureView.swift */; };
 		BE949D703597C101BA64B584 /* CoursesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4672A78800D651CA1E7C7F5 /* CoursesView.swift */; };
 		C0BB0ABEB079B103609687F6 /* PracticeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B1FE4CF87996B6E7456381 /* PracticeListView.swift */; };
 		C2F615806D438BF80512F59F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F746A2A4D25DA330548F2E08 /* Theme.swift */; };
@@ -53,10 +59,12 @@
 		092385692DC35F10A02AA9CA /* CourseTee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseTee.swift; sourceTree = "<group>"; };
 		095AE98616C42A7930F80B5D /* CourseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDetailView.swift; sourceTree = "<group>"; };
 		0F676DF5C46C4454C7AF0C5B /* StartRoundSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRoundSheet.swift; sourceTree = "<group>"; };
+		153553D9D5AB882455302E09 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		1950EC0533EDF3B251050A86 /* PracticeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeDetailView.swift; sourceTree = "<group>"; };
 		19A4290C6F1E4BE0307FB908 /* ClubCatalogSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClubCatalogSeeder.swift; sourceTree = "<group>"; };
 		1A791022C29021C3BF9E5463 /* Shot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shot.swift; sourceTree = "<group>"; };
 		1C16D8772AA8E7E4F9CF002D /* PracticeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeSession.swift; sourceTree = "<group>"; };
+		22E99F04F81DCEB189B7C91D /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		429D5A52769CC7BD696A66CA /* AuditService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditService.swift; sourceTree = "<group>"; };
 		504CD9B7FF956039D612DE42 /* CourseLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseLogo.swift; sourceTree = "<group>"; };
 		508FB03BD55788A78DC68C9D /* Divot.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Divot.entitlements; sourceTree = "<group>"; };
@@ -67,12 +75,15 @@
 		606C25A06C6DF6ED3CE18D31 /* ScorecardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScorecardView.swift; sourceTree = "<group>"; };
 		65659A298DD45A7109516747 /* YardagesScorecard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YardagesScorecard.swift; sourceTree = "<group>"; };
 		6B53793064D4977D4187D0E7 /* HoleShotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoleShotsView.swift; sourceTree = "<group>"; };
+		7084F90AFC5D627D38CDAC65 /* VideosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideosView.swift; sourceTree = "<group>"; };
 		7ACEBBD38E821D4C71E9C42F /* HandicapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandicapView.swift; sourceTree = "<group>"; };
+		7CFED35E91DF691AF2FDFF22 /* VideoBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoBookmark.swift; sourceTree = "<group>"; };
 		8069E59C2DEFF392CF324267 /* WorldRankings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldRankings.swift; sourceTree = "<group>"; };
 		84E4FF918FCE0DE10F3E8BAD /* IdempotencyMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdempotencyMigration.swift; sourceTree = "<group>"; };
 		882F4787FB5102590434D8FF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8BB46FDD508F9F90575FC17C /* PGAView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PGAView.swift; sourceTree = "<group>"; };
 		965DEA02B8696C263A15CFEC /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		96A3F7BAA9922AF2D2260372 /* TempCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempCleaner.swift; sourceTree = "<group>"; };
 		99FDB78590AE1C6492CC6D60 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A1BCA384EC93A1EA6C9822FE /* Course.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Course.swift; sourceTree = "<group>"; };
 		A7DF230C99107FA41CC4E8D3 /* Hole.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hole.swift; sourceTree = "<group>"; };
@@ -86,6 +97,7 @@
 		F0E7D9F927A182EB39D8BD94 /* RoundsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsListView.swift; sourceTree = "<group>"; };
 		F4389AE8937B0FA5A7292C3B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F4A7213C38A32FA730366F3C /* CourseHole.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseHole.swift; sourceTree = "<group>"; };
+		F6E54C1DDCC0DF57248F2686 /* MapMeasureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapMeasureView.swift; sourceTree = "<group>"; };
 		F746A2A4D25DA330548F2E08 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		FEA22B90ED8207DA248CAE87 /* CourseSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseSeeder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -98,6 +110,7 @@
 				F357B7B4D46FBD0F38842704 /* Preview Content */,
 				185A266D83859C30EA02F1A2 /* Services */,
 				BAB67FB468E4D98C4936B0C7 /* Views */,
+				153553D9D5AB882455302E09 /* AppIcon.icon */,
 				882F4787FB5102590434D8FF /* Assets.xcassets */,
 				F4389AE8937B0FA5A7292C3B /* ContentView.swift */,
 				508FB03BD55788A78DC68C9D /* Divot.entitlements */,
@@ -114,7 +127,9 @@
 				FEA22B90ED8207DA248CAE87 /* CourseSeeder.swift */,
 				D2243B983C2026F3F9023B3D /* GolfQuotes.swift */,
 				84E4FF918FCE0DE10F3E8BAD /* IdempotencyMigration.swift */,
+				22E99F04F81DCEB189B7C91D /* LocationService.swift */,
 				5C54082B56DA2032128B198C /* PGAService.swift */,
+				96A3F7BAA9922AF2D2260372 /* TempCleaner.swift */,
 				8069E59C2DEFF392CF324267 /* WorldRankings.swift */,
 			);
 			path = Services;
@@ -138,6 +153,7 @@
 				C4672A78800D651CA1E7C7F5 /* CoursesView.swift */,
 				7ACEBBD38E821D4C71E9C42F /* HandicapView.swift */,
 				6B53793064D4977D4187D0E7 /* HoleShotsView.swift */,
+				F6E54C1DDCC0DF57248F2686 /* MapMeasureView.swift */,
 				8BB46FDD508F9F90575FC17C /* PGAView.swift */,
 				1950EC0533EDF3B251050A86 /* PracticeDetailView.swift */,
 				B6B1FE4CF87996B6E7456381 /* PracticeListView.swift */,
@@ -147,6 +163,7 @@
 				0F676DF5C46C4454C7AF0C5B /* StartRoundSheet.swift */,
 				965DEA02B8696C263A15CFEC /* StatsView.swift */,
 				F746A2A4D25DA330548F2E08 /* Theme.swift */,
+				7084F90AFC5D627D38CDAC65 /* VideosView.swift */,
 				65659A298DD45A7109516747 /* YardagesScorecard.swift */,
 			);
 			path = Views;
@@ -165,6 +182,7 @@
 				1C16D8772AA8E7E4F9CF002D /* PracticeSession.swift */,
 				DA682369B82A6E6DB4C829E5 /* Round.swift */,
 				1A791022C29021C3BF9E5463 /* Shot.swift */,
+				7CFED35E91DF691AF2FDFF22 /* VideoBookmark.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -244,6 +262,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23A91F83A09392AEC461C6A1 /* AppIcon.icon in Resources */,
 				A17150D1F19F6E7370D966A5 /* Assets.xcassets in Resources */,
 				9FE709B9CF39CD753CFA1FA9 /* Preview Assets.xcassets in Resources */,
 			);
@@ -277,6 +296,8 @@
 				C84B6D6A627F62003D9E3531 /* Hole.swift in Sources */,
 				EE60021C1D966FD97F76007A /* HoleShotsView.swift in Sources */,
 				F76E7B66ABF88D1B0ACCDDA9 /* IdempotencyMigration.swift in Sources */,
+				07DD210424CBEB6C629F17CC /* LocationService.swift in Sources */,
+				BD157239F570C1EF1DA38EB4 /* MapMeasureView.swift in Sources */,
 				8A256B14C5426E2A324DC179 /* PGAService.swift in Sources */,
 				D8B7D54DF7EC1B3902B64DEA /* PGAView.swift in Sources */,
 				B8129B17757296C3B7C7C1D9 /* PracticeDetailView.swift in Sources */,
@@ -289,7 +310,10 @@
 				7A61E7AE63DD687FE5B5265A /* Shot.swift in Sources */,
 				C6E5969957895F7284C0807C /* StartRoundSheet.swift in Sources */,
 				14E23E9F20E91A128D2A8C5C /* StatsView.swift in Sources */,
+				A59257B1970BFD16A97B45C1 /* TempCleaner.swift in Sources */,
 				C2F615806D438BF80512F59F /* Theme.swift in Sources */,
+				565678BA4383EB63A7C7BC86 /* VideoBookmark.swift in Sources */,
+				8771A018EDE764865518B1C3 /* VideosView.swift in Sources */,
 				053EA46405483B06BD21D6C3 /* WorldRankings.swift in Sources */,
 				6A11BC49C309E734BB48D18C /* YardagesScorecard.swift in Sources */,
 			);
@@ -432,6 +456,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocationUsageDescription = "Divot uses your location to mark and measure shot distances on the course.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Divot uses your location to mark and measure shot distances on the course.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -457,6 +483,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocationUsageDescription = "Divot uses your location to mark and measure shot distances on the course.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Divot uses your location to mark and measure shot distances on the course.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

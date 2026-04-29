@@ -14,11 +14,10 @@ container and never leaves your machine.
   Color-coded score marks (eagle / birdie / par / bogey / double / triple).
 - **Shot log** — every shot recorded with club, distance, lie, result, notes.
   Drives the longest-drive and trimmed-average-drive stats.
-- **Courses** — eight pre-seeded courses from south-central Pennsylvania
-  (Royal Oaks, Iron Valley, Fairview, Pine Meadows, Dauphin Highlands,
-  Blue Mountain, Foxchase, Deer Valley) plus an indoor sim venue
-  (Woods & Irons). Per-tee yardages, ratings, slopes; per-hole pars and
-  handicap indices.
+- **Courses** — full course model: per-tee yardages, ratings, slopes;
+  per-hole pars and handicap indices. Public build ships empty — the
+  user builds their own list. Indoor-simulator venues are flagged
+  separately so each round can record which course was loaded.
 - **Clubs** — color-coded by category (driver / fairway / hybrid / iron
   set / wedge / putter). Soft-retire keeps history without clutter.
 - **Videos** — quick bookmarks for YouTube coaching clips. Tap-to-open
@@ -66,10 +65,14 @@ open Divot.xcodeproj
 Then build/run the `Divot` scheme in Xcode. Targets **macOS 14+**.
 
 The first run will:
-- Seed the eight bundled courses + sim venue
-- Seed an initial set of bag clubs (you can edit/delete freely)
-- Prompt for Location permission (only used for the Map screen — declining
-  doesn't break anything else)
+- Open with an empty bag, an empty courses list, and no rounds —
+  everything is yours to build.
+- Prompt for Location permission (only used for the Map screen —
+  declining doesn't break anything else).
+
+To pre-seed your own private list of courses or clubs on first launch,
+drop the data into the stubs in `Divot/Services/CourseSeeder.swift`
+and `Divot/Services/ClubCatalogSeeder.swift`.
 
 ## Sandbox & entitlements
 
@@ -87,5 +90,4 @@ camera, no shared containers, no XPC services, no helper tool.
 
 ## License
 
-[MIT](LICENSE) — except for the bundled golf-course logo image assets,
-which are trademarks of their respective clubs. See LICENSE for details.
+[MIT](LICENSE).

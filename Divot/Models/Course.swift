@@ -26,6 +26,12 @@ final class Course {
     var latitude: Double = 0
     var longitude: Double = 0
 
+    /// True for indoor simulators. The "course" record is a venue
+    /// placeholder; the actual track played is recorded per-round on
+    /// `Round.simulatedCourseName`. Defaults to false so existing rows
+    /// migrate cleanly.
+    var isSimulator: Bool = false
+
     @Relationship(deleteRule: .cascade, inverse: \CourseHole.course)
     var holes: [CourseHole] = []
 

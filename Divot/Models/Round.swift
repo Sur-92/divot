@@ -68,6 +68,12 @@ final class Round {
     /// fully delete from the Archived view.
     var isArchived: Bool = false
 
+    /// When the parent course is an indoor simulator (`Course.isSimulator`),
+    /// this records which actual course was loaded on the sim that day —
+    /// e.g. "Pebble Beach", "Augusta", "Bandon Trails". Empty for outdoor
+    /// rounds. Existing rows migrate to "" cleanly.
+    var simulatedCourseName: String = ""
+
     /// Optional link to a saved Course. Round values above remain as a snapshot
     /// (rating/slope/tees) so old rounds aren't retroactively changed by course edits.
     var course: Course?

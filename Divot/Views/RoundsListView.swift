@@ -295,6 +295,13 @@ struct RoundRow: View {
                     Text(String(format: "· %.1f / %d", round.courseRating, round.slopeRating))
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(Theme.dimmer)
+                    if !round.simulatedCourseName.isEmpty {
+                        Text("· SIM: \(round.simulatedCourseName.uppercased())")
+                            .font(.system(size: 9, weight: .medium))
+                            .tracking(1.5)
+                            .foregroundStyle(Theme.accent)
+                            .lineLimit(1)
+                    }
                 }
             }
 

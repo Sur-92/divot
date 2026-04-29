@@ -6,6 +6,13 @@ struct DivotApp: App {
     let container: ModelContainer
 
     init() {
+        // Wipe transient caches (tmp/, Caches/, HTTPStorages/) at launch
+        // and register the same wipe at termination. Keeps the app
+        // container free of stale CFNetworkDownload tmp files and any
+        // URL-cache crumbs from PGAService fetches.
+        TempCleaner.runAtLaunch()
+        TempCleaner.installTerminationHandler()
+
         let schema = Schema([
             Round.self,
             Hole.self,
@@ -15,22 +22,17 @@ struct DivotApp: App {
             CourseHole.self,
             BagClub.self,
             PracticeSession.self,
+            VideoBookmark.self,
             AuditEntry.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             let container = try ModelContainer(for: schema, configurations: [config])
+            // The public build ships empty — courses, clubs, rounds, etc.
+            // are all added by the user through the UI. CourseSeeder /
+            // BagSeeder are kept as extension points: drop your own
+            // private seeders into them if you want first-launch defaults.
             CourseSeeder.seedIfEmpty(context: container.mainContext)
-            CourseSeeder.migrateRoyalOaksIfNeeded(context: container.mainContext)
-            CourseSeeder.seedIronValleyIfNeeded(context: container.mainContext)
-            CourseSeeder.migrateIronValleyHandicapsIfNeeded(context: container.mainContext)
-            CourseSeeder.seedFairviewIfNeeded(context: container.mainContext)
-            CourseSeeder.migrateFairviewHandicapsIfNeeded(context: container.mainContext)
-            CourseSeeder.seedPineMeadowsIfNeeded(context: container.mainContext)
-            CourseSeeder.seedDauphinHighlandsIfNeeded(context: container.mainContext)
-            CourseSeeder.seedBlueMountainIfNeeded(context: container.mainContext)
-            CourseSeeder.seedFoxchaseIfNeeded(context: container.mainContext)
-            CourseSeeder.seedDeerValleyIfNeeded(context: container.mainContext)
             BagSeeder.seedIfEmpty(context: container.mainContext)
             // After all seeders run, stamp any rows missing an idempotency key.
             IdempotencyMigration.backfill(context: container.mainContext)

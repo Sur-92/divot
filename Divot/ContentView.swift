@@ -9,6 +9,8 @@ struct ContentView: View {
         case practice = "Practice"
         case courses = "Courses"
         case clubs = "Clubs"
+        case videos = "Videos"
+        case map = "Map"
         case pga = "PGA"
         case stats = "Stats"
         case handicap = "Handicap"
@@ -21,6 +23,8 @@ struct ContentView: View {
             case .practice: return "figure.golf"
             case .courses:  return "map.fill"
             case .clubs:    return "bag.fill"
+            case .videos:   return "play.rectangle.fill"
+            case .map:      return "scope"
             case .pga:      return "trophy.fill"
             case .stats:    return "chart.bar.fill"
             case .handicap: return "figure.golf.circle"
@@ -39,6 +43,8 @@ struct ContentView: View {
                 case .practice: PracticeListView()
                 case .courses:  CoursesView()
                 case .clubs:    ClubsView()
+                case .videos:   VideosView()
+                case .map:      MapMeasureView()
                 case .pga:      PGAView()
                 case .stats:    StatsView()
                 case .handicap: HandicapView()

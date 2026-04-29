@@ -549,6 +549,7 @@ private struct Event: Decodable {
             let id: String
             let score: String?
             let athlete: Athlete?
+            let team: Team?
             let status: CompStatus?
             let sortOrder: Int?
             let order: Int?
@@ -558,6 +559,13 @@ private struct Event: Decodable {
                 let displayName: String?
                 let flag: Flag?
                 struct Flag: Decodable { let alt: String? }
+            }
+
+            /// Present on team-format events (e.g. Zurich Classic). Two
+            /// athletes per team; ESPN provides a combined display name
+            /// like "Smalley/Springer".
+            struct Team: Decodable {
+                let displayName: String?
             }
 
             struct CompStatus: Decodable {
@@ -682,7 +690,12 @@ private struct Event: Decodable {
                 thru = "—"
             }
 
-            let playerName = c.athlete?.displayName ?? "Unknown"
+            // Team events (Zurich Classic) put the combined name on `team`
+            // instead of `athlete`; fall through to that before giving up.
+            let playerName = c.athlete?.displayName
+                ?? c.team?.displayName
+                ?? "Unknown"
+            let isTeam = c.athlete == nil && c.team != nil
             return PGALeaderboardEntry(
                 id: c.id,
                 position: positionMap[c.id] ?? "—",
@@ -691,7 +704,9 @@ private struct Event: Decodable {
                 toPar: c.score ?? "E",
                 thru: thru,
                 roundScores: roundScores,
-                worldRanking: WorldRankings.rank(for: playerName)
+                // World ranking is per-individual; suppress it for team
+                // events so the column shows blank rather than a wrong rank.
+                worldRanking: isTeam ? nil : WorldRankings.rank(for: playerName)
             )
         }
 

@@ -10,6 +10,9 @@ struct StartRoundSheet: View {
     @State private var selectedTee: CourseTee?
     @State private var roundDate: Date = .now
     @State private var roundType: RoundType = .full18
+    /// Filled in only when `selectedCourse?.isSimulator == true`. Records
+    /// the actual track loaded on the sim (e.g. "Pebble Beach").
+    @State private var simulatedCourseName: String = ""
 
     /// Called with the newly inserted Round so caller can open it.
     var onStart: (Round) -> Void
@@ -29,6 +32,9 @@ struct StartRoundSheet: View {
                     holesSection
                     courseSection
                     if let course = selectedCourse {
+                        if course.isSimulator {
+                            simulatorSection
+                        }
                         teeSection(for: course)
                     }
                 }
@@ -222,6 +228,26 @@ struct StartRoundSheet: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Simulator section (sim-course-name input)
+
+    private var simulatorSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionLabel("Sim Course",
+                         subtitle: "Which track was loaded on the simulator?")
+
+            TextField("",
+                      text: $simulatedCourseName,
+                      prompt: Text("e.g. Pebble Beach")
+                        .foregroundStyle(Theme.dimmer))
+                .textFieldStyle(.plain)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Theme.primaryText)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .glassPanel(padding: 0)
+        }
+    }
+
     private var adHocRow: some View {
         let isSelected = selectedCourse == nil
         return Button {
@@ -383,6 +409,10 @@ struct StartRoundSheet: View {
                 course: course
             )
             round.roundType = roundType
+            if course.isSimulator {
+                round.simulatedCourseName = simulatedCourseName
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
             for courseHole in course.sortedHoles where range.contains(courseHole.number) {
                 let hole = Hole(
                     number: courseHole.number,

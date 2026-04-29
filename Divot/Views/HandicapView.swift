@@ -81,7 +81,9 @@ struct HandicapView: View {
         pool.map(\.differential).sorted()
     }
 
-    /// USGA table: number of lowest differentials to average based on pool size.
+    /// USGA WHS table: number of lowest differentials to average,
+    /// based on the size of the pool of acceptable score-equivalents.
+    /// (One entry = one 18-hole round OR one paired set of 9s.)
     private var useBest: Int {
         switch pool.count {
         case 0...2:   return 0
@@ -97,10 +99,29 @@ struct HandicapView: View {
         }
     }
 
+    /// USGA WHS small-pool adjustment applied AFTER averaging the
+    /// best N differentials. Per the official Rules of Handicapping
+    /// (Rule 5.2b table):
+    ///   3 diffs → −2.0
+    ///   4 diffs → −1.0
+    ///   6 diffs → −1.0
+    ///   any other size → 0
+    /// The adjustment compensates for the smaller, less-representative
+    /// pool early in a player's record.
+    private var smallPoolAdjustment: Double {
+        switch pool.count {
+        case 3:      return -2.0
+        case 4:      return -1.0
+        case 6:      return -1.0
+        default:     return 0
+        }
+    }
+
     private var handicapIndex: Double? {
         guard useBest > 0 else { return nil }
         let best = differentials.prefix(useBest)
-        return best.reduce(0, +) / Double(useBest)
+        let avg = best.reduce(0, +) / Double(useBest)
+        return avg + smallPoolAdjustment
     }
 
     private var trend: (delta: Double, improving: Bool)? {
@@ -157,10 +178,13 @@ struct HandicapView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("INDEX")
-                        .font(.system(size: 10, weight: .semibold))
-                        .tracking(3)
-                        .foregroundStyle(Theme.dim)
+                    HStack(spacing: 6) {
+                        Text("INDEX")
+                            .font(.system(size: 10, weight: .semibold))
+                            .tracking(3)
+                            .foregroundStyle(Theme.dim)
+                        HelpDot(title: "Handicap Index", text: indexHelpText)
+                    }
                     if let idx = handicapIndex {
                         HStack(alignment: .firstTextBaseline, spacing: 12) {
                             Text(String(format: "%.1f", idx))
@@ -209,14 +233,24 @@ struct HandicapView: View {
 
             HStack(spacing: 24) {
                 heroStat(label: "Using", value: "\(useBest)",
-                         sub: useBest == 1 ? "round" : "rounds")
+                         sub: useBest == 1 ? "round" : "rounds",
+                         help: usingHelpText)
                 divider
                 heroStat(label: "Pool", value: "\(pool.count)",
-                         sub: "of last 20")
+                         sub: "of last 20",
+                         help: poolHelpText)
                 divider
                 heroStat(label: "Best Diff",
                          value: differentials.first.map { String(format: "%.1f", $0) } ?? "—",
-                         sub: "low mark")
+                         sub: "low mark",
+                         help: bestDiffHelpText)
+                if smallPoolAdjustment < 0 {
+                    divider
+                    heroStat(label: "WHS Adj.",
+                             value: String(format: "%.1f", smallPoolAdjustment),
+                             sub: "small-pool credit",
+                             help: whsAdjHelpText)
+                }
                 Spacer()
             }
         }
@@ -244,12 +278,20 @@ struct HandicapView: View {
             .frame(width: 1, height: 36)
     }
 
-    private func heroStat(label: String, value: String, sub: String) -> some View {
+    private func heroStat(label: String,
+                          value: String,
+                          sub: String,
+                          help: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(label.uppercased())
-                .font(.system(size: 9, weight: .semibold))
-                .tracking(2)
-                .foregroundStyle(Theme.dim)
+            HStack(spacing: 5) {
+                Text(label.uppercased())
+                    .font(.system(size: 9, weight: .semibold))
+                    .tracking(2)
+                    .foregroundStyle(Theme.dim)
+                if let help {
+                    HelpDot(title: label, text: help)
+                }
+            }
             Text(value)
                 .font(.system(size: 22, weight: .semibold))
                 .monospacedDigit()
@@ -259,6 +301,62 @@ struct HandicapView: View {
                 .tracking(1.5)
                 .foregroundStyle(Theme.accent.opacity(0.8))
         }
+    }
+
+    // MARK: - Help texts
+
+    private var usingHelpText: String {
+        """
+        How many of your lowest score differentials get averaged to \
+        produce your handicap index. The count scales with your pool \
+        size: 1 of 3-5, 2 of 6-8, 3 of 9-11, 4 of 12-14, 5 of 15-16, \
+        6 of 17-18, 7 of 19, 8 of 20. Bigger pool, more representative \
+        average.
+        """
+    }
+
+    private var poolHelpText: String {
+        """
+        Your acceptable score-equivalents — a rolling window of your \
+        most recent 20 entries. One full 18-hole round counts as one \
+        entry. Two 9-hole rounds pair chronologically (oldest with \
+        next-oldest) and combine into one 18-hole-equivalent entry. \
+        As you log more rounds, older entries roll out the back.
+        """
+    }
+
+    private var bestDiffHelpText: String {
+        """
+        The lowest score differential in your pool. Differential = \
+        (113 / Slope) × (Adjusted Gross − Course Rating). It \
+        normalizes a round across course difficulty so a 90 at a \
+        hard track and a 90 at an easy track aren't treated the \
+        same. Lower is better. Adjusted Gross caps each hole at \
+        net double bogey (par + 2 + handicap strokes).
+        """
+    }
+
+    private var whsAdjHelpText: String {
+        """
+        USGA WHS small-pool credit applied after averaging. With \
+        just 3 differentials WHS subtracts 2.0; with 4 or 6 it \
+        subtracts 1.0. The adjustment compensates for an early, \
+        less-representative record — without it, a single low \
+        differential would dominate. The credit goes to 0.0 once \
+        your pool reaches 7+.
+        """
+    }
+
+    private var indexHelpText: String {
+        """
+        Your USGA Handicap Index — a portable measure of your \
+        playing ability that travels between courses. Computed by \
+        averaging the lowest N of your last 20 score differentials, \
+        then applying the small-pool adjustment if the pool has \
+        fewer than 7 entries. Lower is better. A 0.0 is scratch; \
+        the higher the number, the more strokes you get on a given \
+        course relative to par.
+        """
     }
 
     private func trendBadge(_ trend: (delta: Double, improving: Bool)) -> some View {
@@ -472,5 +570,67 @@ struct HandicapView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+}
+
+// MARK: - Help dot (circled question mark with tap-to-show popover)
+
+private struct HelpDot: View {
+    let title: String
+    let text: String
+
+    @State private var showing = false
+
+    var body: some View {
+        Button {
+            showing.toggle()
+        } label: {
+            Image(systemName: "questionmark.circle.fill")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.accent.opacity(0.85))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help(title)
+        .popover(isPresented: $showing, arrowEdge: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "questionmark.circle.fill")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Theme.accent)
+                    Text(title.uppercased())
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(2.5)
+                        .foregroundStyle(Theme.accent)
+                }
+
+                Rectangle()
+                    .fill(LinearGradient(
+                        colors: [Theme.accent.opacity(0.5), Theme.hairline, .clear],
+                        startPoint: .leading, endPoint: .trailing
+                    ))
+                    .frame(height: 1)
+
+                Text(text)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.primaryText)
+                    .lineSpacing(2)
+                    .frame(maxWidth: 320, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(14)
+            .background(
+                ZStack {
+                    Color.black.opacity(0.92)
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.06, green: 0.14, blue: 0.30).opacity(0.55),
+                            Color(red: 0.04, green: 0.10, blue: 0.22).opacity(0.65)
+                        ],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                }
+            )
+        }
     }
 }
