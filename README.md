@@ -7,6 +7,23 @@ bookmarks, and a USGA-style handicap index — all local, no cloud sync,
 no analytics, no telemetry. The data store lives in the app's sandbox
 container and never leaves your machine.
 
+![Rounds list](docs/screenshots/rounds.jpg)
+
+## Screenshots
+
+| | |
+|---|---|
+| **Rounds** — every round, vs‑par color‑coded, course logos at a glance. | **Scorecard** — pro‑style score marks (circle = under par, square = over), per‑hole notes, fairway / GIR flags, putts colored by count. |
+| ![Rounds](docs/screenshots/rounds.jpg) | ![Scorecard](docs/screenshots/scorecard.jpg) |
+| **Courses** — per‑tee yardages, ratings, and slopes. Tap any tee row to play it. | **Clubs &amp; Practice** — color‑coded bag (driver gold, woods blue, hybrid teal, irons silver, wedge green, putter violet), session log, retire instead of delete. |
+| ![Courses](docs/screenshots/courses.jpg) | ![Practice](docs/screenshots/practice.jpg) |
+| **Stats** — per‑9‑hole averages, performance trend, personal bests, trimmed‑average drive, identity ladder (NOW / ASCEND / DESCEND). | **Handicap** — USGA World Handicap System, paired 9‑hole rounds, best‑N differential pool, small‑pool adjustment, per‑metric explainers. |
+| ![Stats](docs/screenshots/stats.jpg) | ![Handicap](docs/screenshots/handicap.jpg) |
+| **Map** — MapKit satellite, geocoded fly‑to for any saved course, two‑point geodesic distance measurement in yards. | **PGA** — current tournament leaderboard and news from ESPN + PGA Tour, weather for the host course. Handles team events. |
+| ![Map](docs/screenshots/map.jpg) | ![PGA](docs/screenshots/pga.jpg) |
+| **Videos** — bookmark coaching clips, auto‑extracts YouTube IDs, opens in your browser. | **Audit log** — append‑only hash‑chained record of every meaningful write. Tamper‑evident. |
+| ![Videos](docs/screenshots/videos.jpg) | ![Audit](docs/screenshots/audit.jpg) |
+
 ## Features
 
 - **Rounds** — full 18, front 9, or back 9. Per-hole scorecard with par,
