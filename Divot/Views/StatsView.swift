@@ -90,6 +90,7 @@ struct StatsView: View {
                     if played.isEmpty {
                         emptyState
                     } else {
+                        identityCard
                         statGrid
                         performanceSection
                         personalBestsSection
@@ -132,6 +133,143 @@ struct StatsView: View {
         } else {
             return "\(base) — all 9-hole."
         }
+    }
+
+    // MARK: - Identity card (who you are · who you can be · who you'd become)
+    //
+    // Three-tier player label driven by score-per-9 average. The middle
+    // label is "now"; the upper is one rung above ("ascend"); the lower
+    // is one rung below ("descend"). Designed to read fast at a glance —
+    // no paragraphs, just a short tag for each tier.
+
+    private enum PlayerTier: Int, CaseIterable {
+        case hazardDonor    // 53+
+        case tripleHunter   // 48-52
+        case bogeyGolfer    // 44-47
+        case midEightyThreat // 40-43
+        case singleDigit    // 36-39
+        case scratchTerritory // <36
+
+        /// Map a per-9 score average onto a tier.
+        static func from(scorePer9 s: Double) -> PlayerTier {
+            switch s {
+            case ..<36:   return .scratchTerritory
+            case 36..<40: return .singleDigit
+            case 40..<44: return .midEightyThreat
+            case 44..<48: return .bogeyGolfer
+            case 48..<53: return .tripleHunter
+            default:      return .hazardDonor
+            }
+        }
+
+        var label: String {
+            switch self {
+            case .hazardDonor:      return "Hazard donor"
+            case .tripleHunter:     return "Triple-bogey hunter"
+            case .bogeyGolfer:      return "Bogey golfer"
+            case .midEightyThreat:  return "Mid-80s threat"
+            case .singleDigit:      return "Single-digit player"
+            case .scratchTerritory: return "Scratch territory"
+            }
+        }
+
+        /// Score-per-9 band that defines this tier (for the subtitle).
+        var bandText: String {
+            switch self {
+            case .hazardDonor:      return "53+/9"
+            case .tripleHunter:     return "48–52/9"
+            case .bogeyGolfer:      return "44–47/9"
+            case .midEightyThreat:  return "40–43/9"
+            case .singleDigit:      return "36–39/9"
+            case .scratchTerritory: return "under 36/9"
+            }
+        }
+
+        /// Rung above (aspirational). Caps at the top.
+        var ascend: PlayerTier {
+            PlayerTier(rawValue: rawValue + 1) ?? self
+        }
+
+        /// Rung below (warning). Caps at the bottom.
+        var descend: PlayerTier {
+            PlayerTier(rawValue: rawValue - 1) ?? self
+        }
+    }
+
+    private var currentTier: PlayerTier { .from(scorePer9: avgPer9) }
+
+    private var identityCard: some View {
+        let now    = currentTier
+        let ascend = now.ascend
+        let descend = now.descend
+
+        return VStack(alignment: .leading, spacing: 0) {
+            // ASCEND
+            tierRow(label: "ASCEND",
+                    arrow: "arrow.up",
+                    tier: ascend,
+                    isCurrent: false,
+                    color: Color(red: 0.55, green: 0.88, blue: 0.60))   // light green
+
+            Rectangle()
+                .fill(Theme.hairline.opacity(0.5))
+                .frame(height: 1)
+
+            // NOW (highlighted)
+            tierRow(label: "NOW",
+                    arrow: "circle.fill",
+                    tier: now,
+                    isCurrent: true,
+                    color: Theme.accent)
+
+            Rectangle()
+                .fill(Theme.hairline.opacity(0.5))
+                .frame(height: 1)
+
+            // DESCEND
+            tierRow(label: "DESCEND",
+                    arrow: "arrow.down",
+                    tier: descend,
+                    isCurrent: false,
+                    color: Color(red: 0.92, green: 0.40, blue: 0.36))   // soft red
+        }
+        .glassPanel(cornerRadius: 6, padding: 0)
+    }
+
+    private func tierRow(label: String,
+                         arrow: String,
+                         tier: PlayerTier,
+                         isCurrent: Bool,
+                         color: Color) -> some View {
+        HStack(spacing: 14) {
+            // Left status column
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Image(systemName: arrow)
+                        .font(.system(size: 9, weight: .bold))
+                    Text(label)
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(2)
+                }
+                .foregroundStyle(color)
+            }
+            .frame(width: 96, alignment: .leading)
+
+            // Tier label
+            Text(tier.label)
+                .font(.system(size: isCurrent ? 18 : 14,
+                              weight: isCurrent ? .bold : .medium))
+                .foregroundStyle(isCurrent ? Theme.primaryText : Theme.dim)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            // Score band
+            Text(tier.bandText)
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .foregroundStyle(Theme.dimmer)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, isCurrent ? 14 : 10)
+        .background(isCurrent ? color.opacity(0.10) : Color.clear)
     }
 
     private var statGrid: some View {

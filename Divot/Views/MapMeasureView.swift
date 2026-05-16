@@ -52,17 +52,10 @@ struct MapMeasureView: View {
         .onAppear {
             location.start()
         }
-        .onChange(of: location.lastLocation) { _, loc in
-            // Recenter once when we get our first fix.
-            guard let loc, pointA == nil, pointB == nil else { return }
-            withAnimation(.easeInOut(duration: 0.4)) {
-                camera = .region(MKCoordinateRegion(
-                    center: loc.coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 0.004,
-                                           longitudeDelta: 0.004) // ~400m box
-                ))
-            }
-        }
+        // Auto-recenter on the user's GPS fix is intentionally disabled —
+        // it kept yanking the camera back to the user while they were
+        // panning around to measure shots. GPS still runs (for "MARK
+        // HERE" pin-drop) but the map no longer moves on its own.
     }
 
     // MARK: - Header
@@ -124,26 +117,6 @@ struct MapMeasureView: View {
                 coursePickerPopover
             }
 
-            Button {
-                recenterOnMe()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "scope")
-                        .font(.system(size: 10, weight: .bold))
-                    Text("ME")
-                        .font(.system(size: 9, weight: .bold))
-                        .tracking(1.5)
-                }
-                .foregroundStyle(Theme.accent)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .overlay(RoundedRectangle(cornerRadius: 3)
-                    .stroke(Theme.accent.opacity(0.45), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-            .disabled(location.lastLocation == nil)
-            .opacity(location.lastLocation == nil ? 0.4 : 1)
-            .help("Recenter on my GPS location")
 
             Spacer()
         }
@@ -461,7 +434,8 @@ struct MapMeasureView: View {
                         .stroke(Theme.accent, lineWidth: 4)
                 }
 
-                UserAnnotation()
+                // UserAnnotation() removed — no live "blue dot" on the
+                // map. GPS still feeds the "MARK HERE" buttons on demand.
             }
             .mapStyle(.imagery(elevation: .realistic))
             .mapControls {
@@ -676,18 +650,6 @@ struct MapMeasureView: View {
                 // Silent — keep the seeded frame, no user-facing error
                 // for a best-effort refinement.
             }
-        }
-    }
-
-    private func recenterOnMe() {
-        guard let here = location.lastLocation?.coordinate else { return }
-        selectedCourse = nil
-        withAnimation(.easeInOut(duration: 0.4)) {
-            camera = .region(MKCoordinateRegion(
-                center: here,
-                span: MKCoordinateSpan(latitudeDelta: 0.004,
-                                       longitudeDelta: 0.004)
-            ))
         }
     }
 

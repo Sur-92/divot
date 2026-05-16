@@ -23,6 +23,9 @@ struct DivotApp: App {
             BagClub.self,
             PracticeSession.self,
             VideoBookmark.self,
+            TrainingExercise.self,
+            TrainingSession.self,
+            PerformedExercise.self,
             AuditEntry.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
