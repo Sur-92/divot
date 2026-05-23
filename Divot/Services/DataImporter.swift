@@ -17,10 +17,41 @@ enum DataImporter {
     // MARK: - Codable payload
 
     struct Payload: Codable {
-        /// Entity sections to wipe before importing — e.g. ["clubs"]. Lets a
-        /// corrected file fully replace a section instead of merging into it.
+        /// Entity sections to wipe before importing — e.g. ["clubs"],
+        /// ["courses"]. Lets a corrected file fully replace a section instead
+        /// of merging into it.
         var reset: [String]?
         var clubs: [ClubRow]?
+        var courses: [CourseRow]?
+    }
+
+    struct CourseRow: Codable {
+        var name: String
+        var address: String?
+        var phone: String?
+        var designer: String?
+        var openedYear: Int?
+        var totalPar: Int?
+        var bookingURL: String?
+        var latitude: Double?
+        var longitude: Double?
+        var isSimulator: Bool?
+        var holes: [HoleRow]?
+        var tees: [TeeRow]?
+    }
+
+    struct HoleRow: Codable {
+        var number: Int
+        var par: Int?
+        var handicapIndex: Int?
+    }
+
+    struct TeeRow: Codable {
+        var name: String
+        var yardage: Int?
+        var courseRating: Double?
+        var slopeRating: Int?
+        var yardages: [Int]?
     }
 
     struct ClubRow: Codable {
@@ -57,17 +88,28 @@ enum DataImporter {
 
         // Wipe requested sections first so a corrected file fully replaces them.
         let reset = Set(payload.reset ?? [])
-        var deleted = 0
+        var deletedClubs = 0
         if reset.contains("clubs") {
             let all = (try? context.fetch(FetchDescriptor<BagClub>())) ?? []
             for club in all { context.delete(club) }
-            deleted = all.count
+            deletedClubs = all.count
+            try? context.save()
+        }
+        var deletedCourses = 0
+        if reset.contains("courses") {
+            let all = (try? context.fetch(FetchDescriptor<Course>())) ?? []
+            for course in all { context.delete(course) }   // cascades to holes/tees
+            deletedCourses = all.count
             try? context.save()
         }
 
-        var inserted = 0
+        var insertedClubs = 0
         if let clubs = payload.clubs {
-            inserted += importClubs(clubs, context: context)
+            insertedClubs += importClubs(clubs, context: context)
+        }
+        var insertedCourses = 0
+        if let courses = payload.courses {
+            insertedCourses += importCourses(courses, context: context)
         }
         try? context.save()
 
@@ -77,7 +119,7 @@ enum DataImporter {
         let done = docs.appendingPathComponent("divot-import.imported-\(stamp).json")
         try? fm.moveItem(at: url, to: done)
 
-        let summary = "Divot import: removed \(deleted), added \(inserted) club(s)"
+        let summary = "Divot import: clubs −\(deletedClubs)/+\(insertedClubs), courses −\(deletedCourses)/+\(insertedCourses)"
         print(summary)
         return summary
     }
@@ -119,5 +161,60 @@ enum DataImporter {
 
     private static func key(_ manufacturer: String, _ model: String, _ number: String) -> String {
         "\(manufacturer.lowercased())|\(model.lowercased())|\(number.lowercased())"
+    }
+
+    // MARK: - Courses
+
+    private static func importCourses(_ rows: [CourseRow], context: ModelContext) -> Int {
+        // De-dup by course name.
+        let existing = (try? context.fetch(FetchDescriptor<Course>())) ?? []
+        var seen = Set(existing.map { $0.name.lowercased() })
+
+        var count = 0
+        for row in rows {
+            if seen.contains(row.name.lowercased()) { continue }
+            seen.insert(row.name.lowercased())
+
+            let course = Course(
+                name: row.name,
+                address: row.address ?? "",
+                phone: row.phone ?? "",
+                designer: row.designer ?? "",
+                openedYear: row.openedYear ?? 0,
+                totalPar: row.totalPar ?? 72
+            )
+            course.bookingURL = row.bookingURL ?? ""
+            course.latitude = row.latitude ?? 0
+            course.longitude = row.longitude ?? 0
+            course.isSimulator = row.isSimulator ?? false
+            context.insert(course)
+
+            if let holes = row.holes {
+                for h in holes {
+                    let hole = CourseHole(number: h.number,
+                                          par: h.par ?? 4,
+                                          handicapIndex: h.handicapIndex ?? 0)
+                    hole.course = course
+                    context.insert(hole)
+                }
+                let summed = holes.reduce(0) { $0 + ($1.par ?? 4) }
+                if summed > 0 { course.totalPar = summed }
+            }
+
+            if let tees = row.tees {
+                for t in tees {
+                    let tee = CourseTee(name: t.name,
+                                        yardage: t.yardage ?? (t.yardages?.reduce(0, +) ?? 0),
+                                        courseRating: t.courseRating ?? 0,
+                                        slopeRating: t.slopeRating ?? 0,
+                                        yardages: t.yardages ?? [])
+                    tee.course = course
+                    context.insert(tee)
+                }
+            }
+
+            count += 1
+        }
+        return count
     }
 }
