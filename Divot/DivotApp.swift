@@ -37,6 +37,9 @@ struct DivotApp: App {
             // private seeders into them if you want first-launch defaults.
             CourseSeeder.seedIfEmpty(context: container.mainContext)
             BagSeeder.seedIfEmpty(context: container.mainContext)
+            // Import a drop-in divot-import.json from the app container's
+            // Documents dir, if present. Keeps private data out of the repo.
+            DataImporter.importIfPresent(context: container.mainContext)
             // After all seeders run, stamp any rows missing an idempotency key.
             IdempotencyMigration.backfill(context: container.mainContext)
             // Connect the audit log to the ModelContainer. AuditService uses
