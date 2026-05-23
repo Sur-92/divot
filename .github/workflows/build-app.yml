@@ -1,0 +1,59 @@
+name: Build Divot.app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Divot/**'
+      - 'project.yml'
+      - 'Divot.xcodeproj/**'
+      - '.github/workflows/build-app.yml'
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26.5
+        run: sudo xcode-select -s /Applications/Xcode_26.5.app
+
+      - name: Toolchain info
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project from project.yml
+        run: xcodegen generate
+
+      - name: Build Divot (Release, unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Divot.xcodeproj \
+            -target Divot \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Locate and package app
+        run: |
+          APP="build/Build/Products/Release/Divot.app"
+          test -d "$APP" || { echo "Divot.app not found at $APP"; find build -name '*.app' -maxdepth 5; exit 1; }
+          echo "Built: $APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" Divot.zip
+          ls -lh Divot.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Divot-app
+          path: Divot.zip
+          if-no-files-found: error
+          retention-days: 7
