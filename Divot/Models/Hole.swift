@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import CoreLocation
 
 @Model
 final class Hole {
@@ -36,6 +37,11 @@ final class Hole {
     var driveX: Double = 0.5
     var driveY: Double = 0.5
 
+    /// Real-world landing spot of the tee shot, plotted on the satellite map.
+    /// (0,0) = unset. `hasDrive` gates whether it's been placed.
+    var driveLat: Double = 0
+    var driveLng: Double = 0
+
     var round: Round?
 
     @Relationship(deleteRule: .cascade, inverse: \Shot.hole)
@@ -68,27 +74,11 @@ final class Hole {
         shots.sorted { $0.number < $1.number }
     }
 
-    // MARK: - Drive landing zones
-    // Lateral band edges, as a fraction of corridor width (0 = far left … 1 = far right).
-    static let bandLFringe = 0.18
-    static let bandFairwayStart = 0.30
-    static let bandFairwayEnd = 0.70
-    static let bandRRough = 0.82
+    // MARK: - Drive landing (satellite plot)
 
-    var driveInFairway: Bool { hasDrive && driveX >= Hole.bandFairwayStart && driveX < Hole.bandFairwayEnd }
-    var driveMissLeft: Bool  { hasDrive && driveX < Hole.bandFairwayStart }
-    var driveMissRight: Bool { hasDrive && driveX >= Hole.bandFairwayEnd }
-    var driveInRough: Bool   { hasDrive && (driveX < Hole.bandLFringe || driveX >= Hole.bandRRough) }
-    var driveShort: Bool     { hasDrive && driveY < 0.40 }
-    var driveLong: Bool      { hasDrive && driveY > 0.70 }
-
-    /// Compact label for the scorecard glyph.
-    var driveZoneLabel: String {
-        guard hasDrive else { return "" }
-        if driveX < Hole.bandLFringe { return "Rgh L" }
-        if driveX < Hole.bandFairwayStart { return "Frg L" }
-        if driveX < Hole.bandFairwayEnd { return "FW" }
-        if driveX < Hole.bandRRough { return "Frg R" }
-        return "Rgh R"
+    /// The plotted tee-shot landing as a real coordinate, or nil if unset.
+    var driveCoordinate: CLLocationCoordinate2D? {
+        guard hasDrive, driveLat != 0 || driveLng != 0 else { return nil }
+        return CLLocationCoordinate2D(latitude: driveLat, longitude: driveLng)
     }
 }

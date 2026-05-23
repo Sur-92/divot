@@ -153,36 +153,11 @@ struct HoleShotsView: View {
 
     private var driveSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
-                Text("TEE SHOT")
-                    .font(.system(size: 10, weight: .semibold))
-                    .tracking(3)
-                    .foregroundStyle(Theme.accent)
-                Spacer()
-                if hole.hasDrive {
-                    let depth = hole.driveLong ? " · LONG" : (hole.driveShort ? " · SHORT" : "")
-                    Text((hole.driveZoneLabel + depth).uppercased())
-                        .font(.system(size: 10, weight: .bold))
-                        .tracking(1.5)
-                        .foregroundStyle(Theme.primaryText)
-                    Button { hole.hasDrive = false } label: {
-                        Text("CLEAR")
-                            .font(.system(size: 9, weight: .semibold))
-                            .tracking(1.5)
-                            .foregroundStyle(Theme.dim)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.hairline, lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    Text("TAP WHERE YOUR DRIVE LANDED")
-                        .font(.system(size: 9, weight: .medium))
-                        .tracking(1.5)
-                        .foregroundStyle(Theme.dim)
-                }
-            }
-            DriveLanding(hole: hole, height: 240)
+            Text("TEE SHOT")
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(3)
+                .foregroundStyle(Theme.accent)
+            DriveMapView(hole: hole)
         }
         .glassPanel(padding: 14)
     }
