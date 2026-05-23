@@ -17,6 +17,9 @@ enum DataImporter {
     // MARK: - Codable payload
 
     struct Payload: Codable {
+        /// Entity sections to wipe before importing — e.g. ["clubs"]. Lets a
+        /// corrected file fully replace a section instead of merging into it.
+        var reset: [String]?
         var clubs: [ClubRow]?
     }
 
@@ -52,6 +55,16 @@ enum DataImporter {
             return nil
         }
 
+        // Wipe requested sections first so a corrected file fully replaces them.
+        let reset = Set(payload.reset ?? [])
+        var deleted = 0
+        if reset.contains("clubs") {
+            let all = (try? context.fetch(FetchDescriptor<BagClub>())) ?? []
+            for club in all { context.delete(club) }
+            deleted = all.count
+            try? context.save()
+        }
+
         var inserted = 0
         if let clubs = payload.clubs {
             inserted += importClubs(clubs, context: context)
@@ -64,7 +77,7 @@ enum DataImporter {
         let done = docs.appendingPathComponent("divot-import.imported-\(stamp).json")
         try? fm.moveItem(at: url, to: done)
 
-        let summary = "Divot import: added \(inserted) club(s)"
+        let summary = "Divot import: removed \(deleted), added \(inserted) club(s)"
         print(summary)
         return summary
     }
