@@ -22,6 +22,20 @@ final class Hole {
     /// 0 = not captured yet.
     var handicapIndex: Int = 0
 
+    /// Penalty strokes taken on this hole. 0 = none.
+    var penalties: Int = 0
+
+    /// Number of bunker (sand) shots on this hole. 0 = none.
+    var bunkerShots: Int = 0
+
+    /// Tee-shot landing plot. `hasDrive` gates X/Y so a fresh hole (0.5,0.5)
+    /// isn't read as a real center plot. X: 0 = far left … 1 = far right.
+    /// Y: 0 = short … 1 = long. Band edges below classify X into
+    /// rough / fringe / fairway.
+    var hasDrive: Bool = false
+    var driveX: Double = 0.5
+    var driveY: Double = 0.5
+
     var round: Round?
 
     @Relationship(deleteRule: .cascade, inverse: \Shot.hole)
@@ -52,5 +66,29 @@ final class Hole {
 
     var sortedShots: [Shot] {
         shots.sorted { $0.number < $1.number }
+    }
+
+    // MARK: - Drive landing zones
+    // Lateral band edges, as a fraction of corridor width (0 = far left … 1 = far right).
+    static let bandLFringe = 0.18
+    static let bandFairwayStart = 0.30
+    static let bandFairwayEnd = 0.70
+    static let bandRRough = 0.82
+
+    var driveInFairway: Bool { hasDrive && driveX >= Hole.bandFairwayStart && driveX < Hole.bandFairwayEnd }
+    var driveMissLeft: Bool  { hasDrive && driveX < Hole.bandFairwayStart }
+    var driveMissRight: Bool { hasDrive && driveX >= Hole.bandFairwayEnd }
+    var driveInRough: Bool   { hasDrive && (driveX < Hole.bandLFringe || driveX >= Hole.bandRRough) }
+    var driveShort: Bool     { hasDrive && driveY < 0.40 }
+    var driveLong: Bool      { hasDrive && driveY > 0.70 }
+
+    /// Compact label for the scorecard glyph.
+    var driveZoneLabel: String {
+        guard hasDrive else { return "" }
+        if driveX < Hole.bandLFringe { return "Rgh L" }
+        if driveX < Hole.bandFairwayStart { return "Frg L" }
+        if driveX < Hole.bandFairwayEnd { return "FW" }
+        if driveX < Hole.bandRRough { return "Frg R" }
+        return "Rgh R"
     }
 }

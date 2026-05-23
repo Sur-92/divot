@@ -35,6 +35,9 @@ struct ScorecardView: View {
             headerCell("FIR",   width: 44)
             headerCell("GIR",   width: 44)
             headerCell("PUTTS", width: 56)
+            headerCell("PEN",   width: 40)
+            headerCell("SAND",  width: 42)
+            headerCell("DRIVE", width: 54)
             Text("NOTES")
                 .font(.system(size: 9, weight: .semibold))
                 .tracking(2)
@@ -64,6 +67,8 @@ struct ScorecardView: View {
         let fairways = round.fairwaysHit
         let greens = round.greensInRegulation
         let putts = round.totalPutts
+        let penalties = holes.reduce(0) { $0 + $1.penalties }
+        let bunkers = holes.reduce(0) { $0 + $1.bunkerShots }
         let toPar = round.scoreToPar
 
         return HStack(spacing: 0) {
@@ -75,6 +80,9 @@ struct ScorecardView: View {
             totalNumber(fairways > 0 ? "\(fairways)" : "—", width: 44)
             totalNumber(greens > 0 ? "\(greens)" : "—", width: 44)
             totalNumber(putts > 0 ? "\(putts)" : "—", width: 56)
+            totalNumber(penalties > 0 ? "\(penalties)" : "—", width: 40)
+            totalNumber(bunkers > 0 ? "\(bunkers)" : "—", width: 42)
+            Color.clear.frame(width: 54)
             Color.clear.frame(maxWidth: .infinity)
             let sign = toPar >= 0 ? "+" : ""
             let text = totalScore > 0 ? "\(sign)\(toPar)" : "—"
@@ -199,6 +207,23 @@ struct HoleRow: View {
             inlineInt(value: $hole.putts, width: 56,
                       color: puttsColor,
                       bold: hole.putts >= 4)
+
+            // PEN (editable) — red when > 0
+            inlineInt(value: $hole.penalties, width: 40,
+                      color: hole.penalties > 0 ? Color(red: 0.92, green: 0.35, blue: 0.32) : Theme.dimmer)
+
+            // SAND (editable) — amber when > 0
+            inlineInt(value: $hole.bunkerShots, width: 42,
+                      color: hole.bunkerShots > 0 ? Theme.accent : Theme.dimmer)
+
+            // DRIVE (tap → hole sheet to plot the landing)
+            Button(action: onLogShots) {
+                DriveGlyph(hole: hole)
+                    .frame(width: 54)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Tap to plot your drive")
 
             // NOTES (flex)
             TextField("", text: $hole.notes, prompt: Text("shot notes").foregroundStyle(Theme.dimmer))

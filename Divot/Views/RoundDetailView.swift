@@ -306,6 +306,8 @@ struct RoundDetailView: View {
 
     private var summaryPanel: some View {
         let sign = round.scoreToPar >= 0 ? "+" : ""
+        let penalties = round.holes.reduce(0) { $0 + $1.penalties }
+        let bunkers = round.holes.reduce(0) { $0 + $1.bunkerShots }
         return LazyVGrid(columns: [
             GridItem(.flexible(), spacing: 12),
             GridItem(.flexible(), spacing: 12),
@@ -323,6 +325,12 @@ struct RoundDetailView: View {
             StatCard(label: "Putts",
                      value: "\(round.totalPutts)",
                      sublabel: String(format: "%.1f / hole", round.averagePutts))
+            StatCard(label: "Penalties",
+                     value: "\(penalties)",
+                     sublabel: penalties == 1 ? "stroke" : "strokes")
+            StatCard(label: "Sand",
+                     value: "\(bunkers)",
+                     sublabel: bunkers == 1 ? "bunker shot" : "bunker shots")
             if round.isComplete {
                 StatCard(label: "Differential",
                          value: String(format: "%.1f", round.scoreDifferential),

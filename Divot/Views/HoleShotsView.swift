@@ -12,6 +12,8 @@ struct HoleShotsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    driveSection
+                    penaltySandSection
                     if hole.shots.isEmpty {
                         emptyState
                     } else {
@@ -145,6 +147,86 @@ struct HoleShotsView: View {
             }
         }
         .glassPanel(padding: 0)
+    }
+
+    // MARK: - Tee shot plot
+
+    private var driveSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                Text("TEE SHOT")
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(3)
+                    .foregroundStyle(Theme.accent)
+                Spacer()
+                if hole.hasDrive {
+                    let depth = hole.driveLong ? " · LONG" : (hole.driveShort ? " · SHORT" : "")
+                    Text((hole.driveZoneLabel + depth).uppercased())
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(1.5)
+                        .foregroundStyle(Theme.primaryText)
+                    Button { hole.hasDrive = false } label: {
+                        Text("CLEAR")
+                            .font(.system(size: 9, weight: .semibold))
+                            .tracking(1.5)
+                            .foregroundStyle(Theme.dim)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.hairline, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text("TAP WHERE YOUR DRIVE LANDED")
+                        .font(.system(size: 9, weight: .medium))
+                        .tracking(1.5)
+                        .foregroundStyle(Theme.dim)
+                }
+            }
+            DriveLanding(hole: hole, height: 240)
+        }
+        .glassPanel(padding: 14)
+    }
+
+    // MARK: - Penalties / sand
+
+    private var penaltySandSection: some View {
+        HStack(spacing: 12) {
+            counterTile(title: "PENALTIES", value: $hole.penalties,
+                        tint: Color(red: 0.92, green: 0.35, blue: 0.32))
+            counterTile(title: "SAND SHOTS", value: $hole.bunkerShots,
+                        tint: Theme.accent)
+        }
+    }
+
+    private func counterTile(title: String, value: Binding<Int>, tint: Color) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(2)
+                    .foregroundStyle(Theme.dim)
+                Text("\(value.wrappedValue)")
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundStyle(value.wrappedValue > 0 ? tint : Theme.primaryText)
+            }
+            Spacer()
+            VStack(spacing: 6) {
+                stepButton("plus") { value.wrappedValue += 1 }
+                stepButton("minus") { if value.wrappedValue > 0 { value.wrappedValue -= 1 } }
+            }
+        }
+        .glassPanel(padding: 14)
+    }
+
+    private func stepButton(_ icon: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Theme.primaryText)
+                .frame(width: 28, height: 22)
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Hole notes
