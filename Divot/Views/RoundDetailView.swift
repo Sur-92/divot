@@ -199,7 +199,7 @@ struct RoundDetailView: View {
             .popover(isPresented: $showTimePicker, arrowEdge: .bottom) {
                 VStack(spacing: 8) {
                     DatePicker("", selection: teeTimeBinding, displayedComponents: .hourAndMinute)
-                        .datePickerStyle(.wheel)
+                        .datePickerStyle(.stepperField)
                         .labelsHidden()
                     Text("≈ 2 hrs per nine")
                         .font(.system(size: 10))

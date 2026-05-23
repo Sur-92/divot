@@ -217,6 +217,15 @@ struct DriveMapView: View {
 
     // MARK: - Camera framing
 
+    /// Initial compass bearing (degrees from true north) from a → b.
+    private func bearing(from a: CLLocationCoordinate2D, to b: CLLocationCoordinate2D) -> Double {
+        let lat1 = a.latitude * .pi / 180, lat2 = b.latitude * .pi / 180
+        let dLon = (b.longitude - a.longitude) * .pi / 180
+        let y = sin(dLon) * cos(lat2)
+        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon)
+        return (atan2(y, x) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
+    }
+
     private func frameInitial() {
         guard !didFrame else { return }
         didFrame = true
@@ -224,15 +233,19 @@ struct DriveMapView: View {
         if let ch = courseHole, ch.hasTee {
             let tee = ch.teeCoordinate
             if ch.hasGreen {
+                // Orient the hole tee-left → green-right: rotate the camera so
+                // the tee→green bearing points to the right of the screen, and
+                // zoom to the hole length.
                 let green = ch.greenCoordinate
-                let center = CLLocationCoordinate2D(
+                let mid = CLLocationCoordinate2D(
                     latitude: (tee.latitude + green.latitude) / 2,
                     longitude: (tee.longitude + green.longitude) / 2)
-                let pad = 1.6
-                let span = MKCoordinateSpan(
-                    latitudeDelta: max(abs(tee.latitude - green.latitude) * pad, 0.003),
-                    longitudeDelta: max(abs(tee.longitude - green.longitude) * pad, 0.003))
-                camera = .region(MKCoordinateRegion(center: center, span: span))
+                let len = CLLocation(latitude: tee.latitude, longitude: tee.longitude)
+                    .distance(from: CLLocation(latitude: green.latitude, longitude: green.longitude))
+                let heading = (bearing(from: tee, to: green) - 90 + 360).truncatingRemainder(dividingBy: 360)
+                camera = .camera(MapCamera(centerCoordinate: mid,
+                                           distance: max(len * 1.7, 280),
+                                           heading: heading, pitch: 0))
             } else {
                 camera = .region(MKCoordinateRegion(center: tee,
                     span: MKCoordinateSpan(latitudeDelta: 0.004, longitudeDelta: 0.004)))
