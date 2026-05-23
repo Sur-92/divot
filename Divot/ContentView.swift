@@ -113,6 +113,8 @@ struct ContentView: View {
 
             Spacer(minLength: 0)
             gradientDivider
+            BackupButton()
+                .padding(.top, 6)
             footer
         }
         .frame(minWidth: 220, idealWidth: 240, maxWidth: 280)
