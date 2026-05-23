@@ -10,9 +10,25 @@ struct CourseLogo: View {
 
     private var cornerRadius: CGFloat { corner ?? height * 0.18 }
 
+    /// Resolves the logo image: first from the asset catalog, then from a
+    /// drop-in file at <container>/Documents/CourseLogos/<name>.png — so
+    /// course logos can live in the app container instead of being bundled
+    /// (and committed) into the app.
+    private var logoImage: NSImage? {
+        guard let assetName, !assetName.isEmpty else { return nil }
+        if let img = NSImage(named: assetName) { return img }
+        if let docs = try? FileManager.default.url(for: .documentDirectory,
+                                                   in: .userDomainMask,
+                                                   appropriateFor: nil,
+                                                   create: false) {
+            let url = docs.appendingPathComponent("CourseLogos/\(assetName).png")
+            if let img = NSImage(contentsOf: url) { return img }
+        }
+        return nil
+    }
+
     var body: some View {
-        if let assetName, !assetName.isEmpty,
-           let img = NSImage(named: assetName) {
+        if let img = logoImage {
             let aspect = img.size.width / max(img.size.height, 1)
             let paddingAmount = height * 0.10
             let contentHeight = height - paddingAmount * 2

@@ -33,6 +33,7 @@ enum DataImporter {
         var openedYear: Int?
         var totalPar: Int?
         var bookingURL: String?
+        var logoAssetName: String?
         var latitude: Double?
         var longitude: Double?
         var isSimulator: Bool?
@@ -184,6 +185,7 @@ enum DataImporter {
                 totalPar: row.totalPar ?? 72
             )
             course.bookingURL = row.bookingURL ?? ""
+            course.logoAssetName = row.logoAssetName ?? ""
             course.latitude = row.latitude ?? 0
             course.longitude = row.longitude ?? 0
             course.isSimulator = row.isSimulator ?? false
