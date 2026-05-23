@@ -74,6 +74,17 @@ final class Round {
     /// rounds. Existing rows migrate to "" cleanly.
     var simulatedCourseName: String = ""
 
+    /// Cached historical weather for the round's date + course location,
+    /// fetched once from Open-Meteo (a past date's weather never changes).
+    /// `weatherCode` is the WMO code; -1 means "not fetched yet".
+    var weatherCode: Int = -1
+    var weatherHighF: Double = 0
+    var weatherLowF: Double = 0
+    var weatherWindMph: Double = 0
+    var weatherPrecipIn: Double = 0
+
+    var hasWeather: Bool { weatherCode >= 0 }
+
     /// Optional link to a saved Course. Round values above remain as a snapshot
     /// (rating/slope/tees) so old rounds aren't retroactively changed by course edits.
     var course: Course?

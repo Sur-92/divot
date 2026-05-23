@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CoreLocation
 
 struct RoundDetailView: View {
     @Bindable var round: Round
@@ -7,6 +8,7 @@ struct RoundDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirm = false
     @State private var showDatePicker = false
+    @State private var loadingWeather = false
 
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -45,6 +47,7 @@ struct RoundDetailView: View {
         }
         .navigationTitle(round.courseName.isEmpty ? "New Round" : round.courseName)
         .onAppear { backfillHoleData() }
+        .task { await loadWeather() }
         .alert(alertTitle, isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) { }
             if round.isArchived {
@@ -97,6 +100,8 @@ struct RoundDetailView: View {
                     teeBadge
                     ratingSlopeBadge
                 }
+
+                weatherBadge
 
                 // Row 3: SCORECARD label (replaces the separate section label below)
                 VStack(alignment: .leading, spacing: 6) {
@@ -227,6 +232,76 @@ struct RoundDetailView: View {
         if s.contains("pink")   { return Color.pink }
         if s.contains("purple") { return Color.purple }
         return Theme.accent
+    }
+
+    // MARK: - Weather
+
+    @ViewBuilder
+    private var weatherBadge: some View {
+        if round.hasWeather {
+            HStack(spacing: 10) {
+                Image(systemName: WeatherService.symbol(for: round.weatherCode))
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 20)
+                Text("\(Int(round.weatherHighF.rounded()))° / \(Int(round.weatherLowF.rounded()))°")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundStyle(Theme.primaryText)
+                Text("·").foregroundStyle(Theme.dimmer)
+                Text(WeatherService.label(for: round.weatherCode))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.dim)
+                Text("·").foregroundStyle(Theme.dimmer)
+                Text("\(Int(round.weatherWindMph.rounded())) mph")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.dim)
+                if round.weatherPrecipIn >= 0.05 {
+                    Text("·").foregroundStyle(Theme.dimmer)
+                    Text(String(format: "%.2f″", round.weatherPrecipIn))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Theme.dim)
+                }
+            }
+        } else if loadingWeather {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Looking up the weather…")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.dim)
+            }
+        }
+    }
+
+    private func loadWeather() async {
+        guard !round.hasWeather, !loadingWeather else { return }
+        loadingWeather = true
+        defer { loadingWeather = false }
+        guard let coord = await weatherLocation() else { return }
+        if let w = await WeatherService.fetch(lat: coord.latitude, lon: coord.longitude, date: round.date) {
+            round.weatherCode = w.code
+            round.weatherHighF = w.highF
+            round.weatherLowF = w.lowF
+            round.weatherWindMph = w.windMph
+            round.weatherPrecipIn = w.precipIn
+            try? modelContext.save()
+        }
+    }
+
+    /// Best available coordinate for the round: saved course center, else a
+    /// hole's tee, else geocode the course address.
+    private func weatherLocation() async -> CLLocationCoordinate2D? {
+        if let c = round.course?.coordinate { return c }
+        if let ch = round.course?.holes.first(where: { $0.hasTee }) { return ch.teeCoordinate }
+        if let addr = round.course?.address, !addr.isEmpty {
+            let geocoder = CLGeocoder()
+            if let loc = (try? await geocoder.geocodeAddressString(addr))?.first?.location {
+                round.course?.latitude = loc.coordinate.latitude
+                round.course?.longitude = loc.coordinate.longitude
+                try? modelContext.save()
+                return loc.coordinate
+            }
+        }
+        return nil
     }
 
     private func deleteRound() {
