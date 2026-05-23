@@ -78,10 +78,10 @@ struct RoundsListView: View {
                 .foregroundStyle(Theme.accent.opacity(0.8))
 
             Text(quote.text)
-                .font(.system(size: 12, design: .serif))
+                .font(.system(size: 16, design: .serif))
                 .italic()
-                .foregroundStyle(Theme.primaryText.opacity(0.85))
-                .lineLimit(2)
+                .foregroundStyle(Theme.primaryText.opacity(0.9))
+                .lineLimit(3)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
