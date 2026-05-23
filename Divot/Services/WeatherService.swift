@@ -63,6 +63,68 @@ enum WeatherService {
         }
     }
 
+    // MARK: - Hourly (for per-nine, time-of-play conditions)
+
+    struct HourlyDay {
+        /// hour-of-day (0–23, local) → reading
+        let byHour: [Int: (code: Int, tempF: Double, windMph: Double, precipIn: Double)]
+        func at(_ hour: Int) -> (code: Int, tempF: Double, windMph: Double, precipIn: Double)? {
+            byHour[max(0, min(23, hour))]
+        }
+    }
+
+    static func fetchHourly(lat: Double, lon: Double, date: Date) async -> HourlyDay? {
+        let df = DateFormatter()
+        df.calendar = Calendar(identifier: .gregorian)
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(identifier: "UTC")
+        df.dateFormat = "yyyy-MM-dd"
+        let day = df.string(from: date)
+        let common = "latitude=\(lat)&longitude=\(lon)&start_date=\(day)&end_date=\(day)"
+            + "&hourly=temperature_2m,windspeed_10m,weathercode,precipitation"
+            + "&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto"
+        for base in ["https://api.open-meteo.com/v1/forecast?",
+                     "https://archive-api.open-meteo.com/v1/archive?"] {
+            if let h = await tryHourly(base + common) { return h }
+        }
+        return nil
+    }
+
+    private static func tryHourly(_ urlStr: String) async -> HourlyDay? {
+        guard let url = URL(string: urlStr) else { return nil }
+        do {
+            let (data, resp) = try await URLSession.shared.data(from: url)
+            guard (resp as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+            let r = try JSONDecoder().decode(OMHourly.self, from: data)
+            guard let h = r.hourly, let times = h.time else { return nil }
+            let codes = h.weathercode ?? [], temps = h.temperature_2m ?? []
+            let winds = h.windspeed_10m ?? [], precs = h.precipitation ?? []
+            var map: [Int: (code: Int, tempF: Double, windMph: Double, precipIn: Double)] = [:]
+            for i in times.indices {
+                let t = times[i]
+                guard let ti = t.firstIndex(of: "T"),
+                      let hr = Int(t[t.index(after: ti)...].prefix(2)) else { continue }
+                map[hr] = (
+                    i < codes.count ? (codes[i] ?? 0) : 0,
+                    i < temps.count ? (temps[i] ?? 0) : 0,
+                    i < winds.count ? (winds[i] ?? 0) : 0,
+                    i < precs.count ? (precs[i] ?? 0) : 0)
+            }
+            return map.isEmpty ? nil : HourlyDay(byHour: map)
+        } catch { return nil }
+    }
+
+    private struct OMHourly: Decodable {
+        let hourly: H?
+        struct H: Decodable {
+            let time: [String]?
+            let temperature_2m: [Double?]?
+            let windspeed_10m: [Double?]?
+            let weathercode: [Int?]?
+            let precipitation: [Double?]?
+        }
+    }
+
     // MARK: - WMO weather code → display
 
     static func symbol(for code: Int) -> String {

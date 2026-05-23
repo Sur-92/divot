@@ -85,6 +85,22 @@ final class Round {
 
     var hasWeather: Bool { weatherCode >= 0 }
 
+    /// Front-9 tee time as minutes from midnight (local); -1 = unset.
+    /// Figuring ~2 hours per nine, the back nine is sampled ≈ +2h later.
+    var teeTimeMinutes: Int = -1
+
+    /// Per-nine conditions sampled mid-nine when a tee time is set
+    /// (frontCode/backCode == -1 means not sampled).
+    var frontCode: Int = -1
+    var frontTempF: Double = 0
+    var frontWindMph: Double = 0
+    var backCode: Int = -1
+    var backTempF: Double = 0
+    var backWindMph: Double = 0
+
+    var hasTeeTime: Bool { teeTimeMinutes >= 0 }
+    var hasNineWeather: Bool { frontCode >= 0 }
+
     /// Optional link to a saved Course. Round values above remain as a snapshot
     /// (rating/slope/tees) so old rounds aren't retroactively changed by course edits.
     var course: Course?

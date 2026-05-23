@@ -8,11 +8,18 @@ struct RoundDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirm = false
     @State private var showDatePicker = false
+    @State private var showTimePicker = false
     @State private var loadingWeather = false
 
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEEE, MMM, d, yyyy"
+        return f
+    }()
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "h:mm a"
         return f
     }()
 
@@ -47,7 +54,7 @@ struct RoundDetailView: View {
         }
         .navigationTitle(round.courseName.isEmpty ? "New Round" : round.courseName)
         .onAppear { backfillHoleData() }
-        .task { await loadWeather() }
+        .task(id: round.teeTimeMinutes) { await loadWeather() }
         .alert(alertTitle, isPresented: $showDeleteConfirm) {
             Button("Cancel", role: .cancel) { }
             if round.isArchived {
@@ -97,6 +104,7 @@ struct RoundDetailView: View {
                 // Row 2: date (editable) + tees + rating/slope on one line
                 HStack(spacing: 22) {
                     dateButton
+                    teeTimeButton
                     teeBadge
                     ratingSlopeBadge
                 }
@@ -172,6 +180,58 @@ struct RoundDetailView: View {
         }
     }
 
+    private var teeTimeButton: some View {
+        HStack(spacing: 8) {
+            Text("TEE TIME")
+                .font(.system(size: 9, weight: .semibold))
+                .tracking(2)
+                .foregroundStyle(Theme.dim)
+            Button {
+                showTimePicker.toggle()
+            } label: {
+                Text(round.hasTeeTime ? Self.timeFormatter.string(from: teeTimeBinding.wrappedValue) : "Set")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(round.hasTeeTime ? Theme.primaryText : Theme.accent)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Set your front-9 tee time for time-of-play weather (≈2 hrs per nine)")
+            .popover(isPresented: $showTimePicker, arrowEdge: .bottom) {
+                VStack(spacing: 8) {
+                    DatePicker("", selection: teeTimeBinding, displayedComponents: .hourAndMinute)
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
+                    Text("≈ 2 hrs per nine")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Theme.dim)
+                }
+                .padding(16)
+                .frame(width: 240)
+            }
+        }
+    }
+
+    private var teeTimeBinding: Binding<Date> {
+        Binding(
+            get: {
+                let cal = Calendar.current
+                var c = cal.dateComponents([.year, .month, .day], from: round.date)
+                c.hour = round.hasTeeTime ? round.teeTimeMinutes / 60 : 9
+                c.minute = round.hasTeeTime ? round.teeTimeMinutes % 60 : 0
+                return cal.date(from: c) ?? round.date
+            },
+            set: { newDate in
+                let cal = Calendar.current
+                let h = cal.component(.hour, from: newDate)
+                let m = cal.component(.minute, from: newDate)
+                round.teeTimeMinutes = h * 60 + m
+                round.frontCode = -1          // force a fresh per-nine fetch
+                round.backCode = -1
+                try? modelContext.save()
+            }
+        )
+    }
+
     // MARK: - Header badges
 
     private var teeBadge: some View {
@@ -238,7 +298,16 @@ struct RoundDetailView: View {
 
     @ViewBuilder
     private var weatherBadge: some View {
-        if round.hasWeather {
+        if round.hasNineWeather {
+            HStack(spacing: 18) {
+                nineChip(label: nineLabel(front: true), code: round.frontCode,
+                         temp: round.frontTempF, wind: round.frontWindMph)
+                if round.roundType == .full18 && round.backCode >= 0 {
+                    nineChip(label: "BACK 9", code: round.backCode,
+                             temp: round.backTempF, wind: round.backWindMph)
+                }
+            }
+        } else if round.hasWeather {
             HStack(spacing: 10) {
                 Image(systemName: WeatherService.symbol(for: round.weatherCode))
                     .font(.system(size: 15))
@@ -272,18 +341,62 @@ struct RoundDetailView: View {
         }
     }
 
+    private func nineLabel(front: Bool) -> String {
+        switch round.roundType {
+        case .full18: return front ? "FRONT 9" : "BACK 9"
+        case .front9: return "FRONT 9"
+        case .back9:  return "BACK 9"
+        }
+    }
+
+    private func nineChip(label: String, code: Int, temp: Double, wind: Double) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: WeatherService.symbol(for: code))
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.accent)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(label)
+                    .font(.system(size: 8, weight: .semibold))
+                    .tracking(1.5)
+                    .foregroundStyle(Theme.dim)
+                Text("\(Int(temp.rounded()))° · \(Int(wind.rounded())) mph")
+                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                    .foregroundStyle(Theme.primaryText)
+            }
+        }
+    }
+
     private func loadWeather() async {
-        guard !round.hasWeather, !loadingWeather else { return }
-        loadingWeather = true
-        defer { loadingWeather = false }
-        guard let coord = await weatherLocation() else { return }
-        if let w = await WeatherService.fetch(lat: coord.latitude, lon: coord.longitude, date: round.date) {
-            round.weatherCode = w.code
-            round.weatherHighF = w.highF
-            round.weatherLowF = w.lowF
-            round.weatherWindMph = w.windMph
-            round.weatherPrecipIn = w.precipIn
+        guard !loadingWeather else { return }
+        if round.hasTeeTime {
+            // Time-of-play, per-nine conditions (≈2 hrs per nine).
+            guard !round.hasNineWeather else { return }
+            loadingWeather = true; defer { loadingWeather = false }
+            guard let coord = await weatherLocation() else { return }
+            guard let day = await WeatherService.fetchHourly(
+                lat: coord.latitude, lon: coord.longitude, date: round.date) else { return }
+            let startH = round.teeTimeMinutes / 60
+            if let f = day.at(startH + 1) {                      // mid front nine
+                round.frontCode = f.code; round.frontTempF = f.tempF; round.frontWindMph = f.windMph
+            }
+            if round.roundType == .full18, let b = day.at(startH + 3) {   // mid back nine
+                round.backCode = b.code; round.backTempF = b.tempF; round.backWindMph = b.windMph
+            }
             try? modelContext.save()
+        } else {
+            // No tee time → daily summary fallback.
+            guard !round.hasWeather else { return }
+            loadingWeather = true; defer { loadingWeather = false }
+            guard let coord = await weatherLocation() else { return }
+            if let w = await WeatherService.fetch(
+                lat: coord.latitude, lon: coord.longitude, date: round.date) {
+                round.weatherCode = w.code
+                round.weatherHighF = w.highF
+                round.weatherLowF = w.lowF
+                round.weatherWindMph = w.windMph
+                round.weatherPrecipIn = w.precipIn
+                try? modelContext.save()
+            }
         }
     }
 
