@@ -32,11 +32,12 @@ jobs:
       - name: Build Divot (Release, unsigned)
         run: |
           set -o pipefail
+          rm -rf out
           xcodebuild \
             -project Divot.xcodeproj \
             -target Divot \
             -configuration Release \
-            -derivedDataPath build \
+            CONFIGURATION_BUILD_DIR="$PWD/out" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
@@ -44,8 +45,8 @@ jobs:
 
       - name: Locate and package app
         run: |
-          APP="build/Build/Products/Release/Divot.app"
-          test -d "$APP" || { echo "Divot.app not found at $APP"; find build -name '*.app' -maxdepth 5; exit 1; }
+          APP="out/Divot.app"
+          test -d "$APP" || { echo "Divot.app not found at $APP"; find out -name '*.app' -maxdepth 5; exit 1; }
           echo "Built: $APP"
           ditto -c -k --sequesterRsrc --keepParent "$APP" Divot.zip
           ls -lh Divot.zip
