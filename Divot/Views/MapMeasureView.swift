@@ -9,8 +9,14 @@ import CoreLocation
 /// current GPS fix ("MARK HERE") or by tapping the map. A course picker
 /// in the toolbar flies the camera to any saved course with coordinates.
 struct MapMeasureView: View {
+    @Environment(\.modelContext) private var modelContext
     @StateObject private var location = LocationService.shared
-    @Query(sort: \Course.name) private var courses: [Course]
+
+    // `@Query` in a NavigationSplitView detail pane has been observed to
+    // resolve against an empty context — the dropdown came up with zero
+    // courses even though the Courses screen sees them all. Fetching
+    // manually with a FetchDescriptor on appear sidesteps that.
+    @State private var courses: [Course] = []
 
     @State private var pointA: CLLocationCoordinate2D?
     @State private var pointB: CLLocationCoordinate2D?
@@ -61,6 +67,10 @@ struct MapMeasureView: View {
         }
         .onAppear {
             location.start()
+            reloadCourses()
+        }
+        .onChange(of: showingCoursePicker) { _, opening in
+            if opening { reloadCourses() }
         }
         // Auto-recenter on the user's GPS fix is intentionally disabled —
         // it kept yanking the camera back to the user while they were
@@ -97,14 +107,6 @@ struct MapMeasureView: View {
                 .font(.system(size: 9, weight: .semibold))
                 .tracking(2)
                 .foregroundStyle(Theme.dim)
-
-            // TEMP DIAGNOSTIC: surfaces what @Query actually sees so we can
-            // tell whether the dropdown is empty because of data or UI.
-            // Safe to leave in for one build — remove once verified.
-            Text("[total=\(courses.count) coords=\(coursesWithCoords.count)]")
-                .font(.system(size: 9, weight: .medium))
-                .monospacedDigit()
-                .foregroundStyle(Theme.accent)
 
             // Themed dropdown — opens a styled popover with the full
             // list of courses. Replaces the native macOS Menu so the
@@ -631,6 +633,16 @@ struct MapMeasureView: View {
             pointB = here
             tapTarget = .a
         }
+    }
+
+    /// Manual course fetch. Replaces the previous `@Query` which was
+    /// resolving against an empty context inside the NavigationSplitView
+    /// detail pane and returning zero rows.
+    private func reloadCourses() {
+        let descriptor = FetchDescriptor<Course>(
+            sortBy: [SortDescriptor(\Course.name)]
+        )
+        courses = (try? modelContext.fetch(descriptor)) ?? []
     }
 
     /// Fly the camera to a saved course. Uses the stored lat/lon as a
