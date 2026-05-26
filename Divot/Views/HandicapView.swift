@@ -31,13 +31,13 @@ struct HandicapView: View {
     }
 
     private var complete: [Round] {
-        // Excludes reconstructed rounds — their per-hole scores were
-        // distributed to match a known total, which makes the adjusted-
-        // gross / net-double-bogey calculation meaningless and would
-        // poison the differential pool.
-        rounds.filter {
-            $0.isComplete && !$0.isArchived && !$0.isReconstructed
-        }
+        // Reconstructed rounds ARE included. Their totals are accurate
+        // (synthetic hole scores were distributed to match the known
+        // total) and the distribution algorithm caps each synthetic
+        // hole at par + 2 — exactly the net-double-bogey ceiling the
+        // WHS adjusted-gross calculation uses. So adjusted gross equals
+        // raw total on these rounds and the differential is correct.
+        rounds.filter { $0.isComplete && !$0.isArchived }
     }
 
     /// 9-hole rounds that don't have a partner yet — oldest leftover first.
