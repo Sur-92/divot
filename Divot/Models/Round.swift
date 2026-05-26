@@ -68,6 +68,13 @@ final class Round {
     /// fully delete from the Archived view.
     var isArchived: Bool = false
 
+    /// Marks rounds whose hole-by-hole data is partial or estimated — e.g.
+    /// rounds reconstructed from old screenshots where the totals are
+    /// known but individual hole scores had to be synthesized. Stats and
+    /// Handicap exclude these so the calculations stay honest. The round
+    /// still appears on the main Rounds list with a small badge.
+    var isReconstructed: Bool = false
+
     /// When the parent course is an indoor simulator (`Course.isSimulator`),
     /// this records which actual course was loaded on the sim that day —
     /// e.g. "Pebble Beach", "Augusta", "Bandon Trails". Empty for outdoor

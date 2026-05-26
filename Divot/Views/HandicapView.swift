@@ -31,7 +31,13 @@ struct HandicapView: View {
     }
 
     private var complete: [Round] {
-        rounds.filter { $0.isComplete && !$0.isArchived }
+        // Excludes reconstructed rounds — their per-hole scores were
+        // distributed to match a known total, which makes the adjusted-
+        // gross / net-double-bogey calculation meaningless and would
+        // poison the differential pool.
+        rounds.filter {
+            $0.isComplete && !$0.isArchived && !$0.isReconstructed
+        }
     }
 
     /// 9-hole rounds that don't have a partner yet — oldest leftover first.

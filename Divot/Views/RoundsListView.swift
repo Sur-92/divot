@@ -230,6 +230,21 @@ struct RoundRow: View {
                 .stroke(Theme.hairline, lineWidth: 1))
     }
 
+    /// Subtle marker on rounds whose hole detail was reconstructed from
+    /// screenshots or partial sources. These rounds still appear on the
+    /// list but Stats and Handicap exclude them so the math stays honest.
+    private var reconstructedBadge: some View {
+        Text("RECONSTRUCTED")
+            .font(.system(size: 8, weight: .bold))
+            .tracking(1.8)
+            .foregroundStyle(Theme.dim)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .overlay(RoundedRectangle(cornerRadius: 2)
+                .stroke(Theme.dim.opacity(0.5), lineWidth: 1))
+            .help("Hole-by-hole detail was estimated to match a known total. Excluded from Stats and Handicap.")
+    }
+
     @ViewBuilder
     private var roundTypeBadge: some View {
         if round.roundType != .full18 {
@@ -273,6 +288,9 @@ struct RoundRow: View {
                         .foregroundStyle(Theme.primaryText)
                         .lineLimit(1)
                     roundTypeBadge
+                    if round.isReconstructed {
+                        reconstructedBadge
+                    }
                     if round.isArchived {
                         archivedBadge
                     }

@@ -9,7 +9,13 @@ struct StatsView: View {
     // MARK: - Round pools
 
     private var played: [Round] {
-        rounds.filter { $0.totalScore > 0 && !$0.isArchived }
+        // Excludes reconstructed rounds: their hole-by-hole detail was
+        // synthesized to match a known total, so they'd pollute averages,
+        // FIR/GIR rates, and putts/hole. The rounds still show on the
+        // main list with a badge — they just don't count here.
+        rounds.filter {
+            $0.totalScore > 0 && !$0.isArchived && !$0.isReconstructed
+        }
     }
 
     private var played18: [Round] { played.filter { $0.holeCount == 18 } }
