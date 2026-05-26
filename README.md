@@ -107,7 +107,7 @@ camera, no shared containers, no XPC services, no helper tool.
 
 ## License
 
-[MIT](LICENSE).
+All Rights Reserved — personal project. See [LICENSE](LICENSE).
 
 ## Tooling
 
