@@ -90,7 +90,7 @@ enum GolferProfiles {
             tagline: "Sport psychologist · coach to dozens of major winners",
             bio: "The most influential sport psychologist in modern golf. Dr. Bob Rotella has worked with Pádraig Harrington, Tom Kite, Davis Love III, Rory McIlroy and many more, and his books — “Golf Is Not a Game of Perfect,” “Putting Out of Your Mind” — are still standard reading. Generous teacher, careful listener, and a quietly transformative figure in the mental game.",
             photoAssetName: "BobRotella",
-            wikipediaURL: "https://en.wikipedia.org/wiki/Bob_Rotella"),
+            wikipediaURL: nil),   // no Wikipedia article — placeholder photo
 
         "Bobby Unser": .init(
             name: "Bobby Unser",
