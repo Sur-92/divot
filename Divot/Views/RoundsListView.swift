@@ -87,15 +87,7 @@ struct RoundsListView: View {
 
             Spacer(minLength: 12)
 
-            HStack(spacing: 8) {
-                Rectangle()
-                    .fill(Theme.accent)
-                    .frame(width: 18, height: 1.5)
-                Text(quote.author.uppercased())
-                    .font(.system(size: 10, weight: .bold))
-                    .tracking(2.5)
-                    .foregroundStyle(Theme.accent)
-            }
+            AuthorChip(author: quote.author)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 14)
