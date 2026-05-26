@@ -108,3 +108,7 @@ camera, no shared containers, no XPC services, no helper tool.
 ## License
 
 [MIT](LICENSE).
+
+## Tooling
+
+This project was built with the assistance of modern AI coding systems, primarily Claude and ChatGPT, which proved valuable for accelerating implementation, exploration, and iteration throughout development. The architecture, direction, tradeoffs, constraints, and final decisions that give the system coherence were guided and directed by me.
