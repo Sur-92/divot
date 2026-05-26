@@ -17,11 +17,21 @@ struct MapMeasureView: View {
     @State private var selectedCourse: Course?
     @State private var showingCoursePicker: Bool = false
 
-    /// Courses with usable lat/lon, sorted alphabetically. Filters out
-    /// the sim and any rows that haven't been geo-coded yet.
+    /// Courses with usable lat/lon, sorted alphabetically. (Kept for the
+    /// header count badge — the picker itself now shows every course so
+    /// the dropdown is never empty.)
     private var coursesWithCoords: [Course] {
         courses.filter { $0.coordinate != nil }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    /// Every course, sorted alphabetically. Used by the picker so the
+    /// dropdown is never empty — rows without coords show a subtle
+    /// "no coords" hint and don't move the camera when tapped.
+    private var allCoursesSorted: [Course] {
+        courses.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
     }
 
     /// Camera state. Defaults to a wide US-Eastern view; recenters once
@@ -88,6 +98,14 @@ struct MapMeasureView: View {
                 .tracking(2)
                 .foregroundStyle(Theme.dim)
 
+            // TEMP DIAGNOSTIC: surfaces what @Query actually sees so we can
+            // tell whether the dropdown is empty because of data or UI.
+            // Safe to leave in for one build — remove once verified.
+            Text("[total=\(courses.count) coords=\(coursesWithCoords.count)]")
+                .font(.system(size: 9, weight: .medium))
+                .monospacedDigit()
+                .foregroundStyle(Theme.accent)
+
             // Themed dropdown — opens a styled popover with the full
             // list of courses. Replaces the native macOS Menu so the
             // typography and color match the rest of the app.
@@ -150,8 +168,8 @@ struct MapMeasureView: View {
                 ))
                 .frame(height: 1)
 
-            if coursesWithCoords.isEmpty {
-                Text("No saved courses with coordinates yet.")
+            if allCoursesSorted.isEmpty {
+                Text("No saved courses yet.")
                     .font(.system(size: 11))
                     .foregroundStyle(Theme.dim)
                     .padding(14)
@@ -159,10 +177,10 @@ struct MapMeasureView: View {
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(Array(coursesWithCoords.enumerated()), id: \.element.id) { index, course in
+                        ForEach(Array(allCoursesSorted.enumerated()), id: \.element.id) { index, course in
                             coursePickerRow(course,
                                             isAlternate: index.isMultiple(of: 2))
-                            if index < coursesWithCoords.count - 1 {
+                            if index < allCoursesSorted.count - 1 {
                                 Rectangle()
                                     .fill(Theme.hairline.opacity(0.6))
                                     .frame(height: 1)
