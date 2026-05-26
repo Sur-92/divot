@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Charts
+import CoreLocation
 
 struct StatsView: View {
     @Query(sort: \Round.date, order: .reverse) private var rounds: [Round]
@@ -722,10 +723,19 @@ struct PersonalBests {
             //       hole's scorecard flag `fairwayHit` is on.
             // That way a user who logs just the driver with a distance, and
             // who also checked the FIR box, still contributes a personal best.
+            //
+            // GPS fallback (no shot log): if the user plotted their drive on
+            // the hole map (hole.hasDrive + matching CourseHole.teeCoordinate),
+            // compute distance as the great-circle yards tee → drive. Uses
+            // hole.fairwayHit for the FIR check. Only applies when no driver
+            // shot was logged for that hole, so we don't double-count.
             for hole in holes {
                 let shots = hole.sortedShots
+                var loggedDriverForHole = false
+
                 for (i, shot) in shots.enumerated() {
                     guard shot.club == .driver, shot.distance > 0 else { continue }
+                    loggedDriverForHole = true
 
                     driverDistances.append(shot.distance)
 
@@ -738,6 +748,28 @@ struct PersonalBests {
 
                     if landedFairway, shot.distance > (longestDrive?.distance ?? 0) {
                         longestDrive = (shot.distance, round)
+                    }
+                }
+
+                // Par 3s excluded — the tee shot there is an iron / hybrid,
+                // not a driver, and would skew the trimmed average down.
+                if !loggedDriverForHole, hole.par >= 4,
+                   let plot = hole.driveCoordinate,
+                   let courseHole = round.course?.sortedHoles
+                        .first(where: { $0.number == hole.number }),
+                   courseHole.hasTee {
+                    let teeLoc = CLLocation(latitude: courseHole.teeLatitude,
+                                            longitude: courseHole.teeLongitude)
+                    let dropLoc = CLLocation(latitude: plot.latitude,
+                                             longitude: plot.longitude)
+                    let yards = Int((teeLoc.distance(from: dropLoc) * 1.09361)
+                        .rounded())
+                    if yards > 0 {
+                        driverDistances.append(yards)
+                        if hole.fairwayHit,
+                           yards > (longestDrive?.distance ?? 0) {
+                            longestDrive = (yards, round)
+                        }
                     }
                 }
             }
