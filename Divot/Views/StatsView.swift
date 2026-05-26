@@ -9,17 +9,27 @@ struct StatsView: View {
     // MARK: - Round pools
 
     private var played: [Round] {
-        // Excludes reconstructed rounds: their hole-by-hole detail was
-        // synthesized to match a known total, so they'd pollute averages,
-        // FIR/GIR rates, and putts/hole. The rounds still show on the
-        // main list with a badge — they just don't count here.
+        // Strict pool — excludes reconstructed rounds (their FIR/GIR/putts
+        // are synthetic). Used for averages, FIR/GIR/putts/hole, low
+        // round, and the FIR/GIR/putts chart modes.
         rounds.filter {
             $0.totalScore > 0 && !$0.isArchived && !$0.isReconstructed
         }
     }
 
+    /// Permissive pool — every active round including reconstructed
+    /// ones. Round totals are always accurate (reconstructed scores were
+    /// distributed across holes to match the known total), so this pool
+    /// is safe for: the round count, the Last 5 list, and the score-
+    /// based chart modes (vs Par / 9 and Score / 9).
+    private var allRounds: [Round] {
+        rounds.filter { $0.totalScore > 0 && !$0.isArchived }
+    }
+
     private var played18: [Round] { played.filter { $0.holeCount == 18 } }
     private var played9:  [Round] { played.filter { $0.holeCount == 9 } }
+    private var all18:    [Round] { allRounds.filter { $0.holeCount == 18 } }
+    private var all9:     [Round] { allRounds.filter { $0.holeCount == 9 } }
 
     // MARK: - Hole-normalized averages (per 9 holes)
     //
@@ -300,13 +310,13 @@ struct StatsView: View {
                      value: headlineLow.map { "\($0.round.totalScore)" } ?? "—",
                      sublabel: headlineLow?.typeLabel ?? "no rounds yet")
             StatCard(label: "Rounds",
-                     value: "\(played.count)",
+                     value: "\(allRounds.count)",
                      sublabel: roundsMixSublabel)
         }
     }
 
     private var roundsMixSublabel: String {
-        switch (played18.count, played9.count) {
+        switch (all18.count, all9.count) {
         case (0, _):  return "all 9-hole"
         case (_, 0):  return "all 18-hole"
         case let (a, b): return "\(a) × 18 · \(b) × 9"
@@ -318,7 +328,7 @@ struct StatsView: View {
             SectionLabel("Last 5 Rounds", subtitle: "Trajectory check · tap to open")
 
             VStack(spacing: 0) {
-                ForEach(Array(played.prefix(5).enumerated()), id: \.element.id) { index, round in
+                ForEach(Array(allRounds.prefix(5).enumerated()), id: \.element.id) { index, round in
                     Button {
                         selectedRound = round
                     } label: {
@@ -326,7 +336,7 @@ struct StatsView: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    if index < min(4, played.count - 1) {
+                    if index < min(4, allRounds.count - 1) {
                         Rectangle()
                             .fill(Theme.hairline)
                             .frame(height: 1)
@@ -343,10 +353,23 @@ struct StatsView: View {
         return HStack(spacing: 14) {
             CourseLogo(assetName: round.course?.logoAssetName, height: 26)
             VStack(alignment: .leading, spacing: 3) {
-                Text(round.courseName.isEmpty ? "UNTITLED" : round.courseName.uppercased())
-                    .font(.system(size: 12, weight: .semibold))
-                    .tracking(1.5)
-                    .foregroundStyle(Theme.primaryText)
+                HStack(spacing: 8) {
+                    Text(round.courseName.isEmpty ? "UNTITLED" : round.courseName.uppercased())
+                        .font(.system(size: 12, weight: .semibold))
+                        .tracking(1.5)
+                        .foregroundStyle(Theme.primaryText)
+                    if round.isReconstructed {
+                        Text("RECON")
+                            .font(.system(size: 8, weight: .bold))
+                            .tracking(1.5)
+                            .foregroundStyle(Theme.dim)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .overlay(RoundedRectangle(cornerRadius: 2)
+                                .stroke(Theme.dim.opacity(0.5), lineWidth: 1))
+                            .help("Reconstructed — totals accurate, hole detail estimated.")
+                    }
+                }
                 HStack(spacing: 6) {
                     Text(round.date.formatted(date: .abbreviated, time: .omitted))
                         .font(.system(size: 10))
@@ -394,10 +417,23 @@ struct StatsView: View {
 
     @State private var chartMetric: ChartMetric = .toPar
 
-    /// All played rounds — 9- and 18-hole included, because vs-par and score
-    /// are normalized per 9 and the other metrics are already per-hole.
+    /// Chart data source depends on the active metric:
+    ///   - vs Par / 9 and Score / 9 → use ALL rounds. Totals are accurate
+    ///     even on reconstructed rounds (their hole scores sum to the
+    ///     known total by construction), and the per-9 normalization
+    ///     makes 9- and 18-hole rounds comparable.
+    ///   - FIR / GIR / Putts → use only non-reconstructed rounds. Those
+    ///     hole-level fields are zeroed on reconstructed rounds and
+    ///     would yank the trend toward zero.
     private var eligibleRoundsForChart: [Round] {
-        played
+        let pool: [Round]
+        switch chartMetric {
+        case .toPar, .total:
+            pool = allRounds
+        case .fairways, .gir, .putts:
+            pool = played
+        }
+        return pool
             .filter { $0.holeCount > 0 && $0.totalScore > 0 }
             .sorted { $0.date < $1.date }
     }
