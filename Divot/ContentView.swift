@@ -10,6 +10,7 @@ struct ContentView: View {
         case courses = "Courses"
         case clubs = "Clubs"
         case videos = "Videos"
+        case advisors = "Advisors"
         case map = "Map"
         case pga = "PGA"
         case stats = "Stats"
@@ -24,6 +25,7 @@ struct ContentView: View {
             case .courses:  return "map.fill"
             case .clubs:    return "bag.fill"
             case .videos:   return "play.rectangle.fill"
+            case .advisors: return "book.fill"
             case .map:      return "scope"
             case .pga:      return "trophy.fill"
             case .stats:    return "chart.bar.fill"
@@ -44,6 +46,7 @@ struct ContentView: View {
                 case .courses:  CoursesView()
                 case .clubs:    ClubsView()
                 case .videos:   VideosView()
+                case .advisors: AdvisorsView()
                 case .map:      MapMeasureView()
                 case .pga:      PGAView()
                 case .stats:    StatsView()
