@@ -23,6 +23,8 @@ container and never leaves your machine.
 | ![Map](docs/screenshots/map.jpg) | ![PGA](docs/screenshots/pga.jpg) |
 | **Videos** — bookmark coaching clips, auto‑extracts YouTube IDs, opens in your browser. | **Audit log** — append‑only hash‑chained record of every meaningful write. Tamper‑evident. |
 | ![Videos](docs/screenshots/videos.jpg) | ![Audit](docs/screenshots/audit.jpg) |
+| **Advisors** — curated reading on the teachers who shaped the modern game. Eight pros, each with bio, era, specialty, and 5 actionable "Key Teachings" pulled from their books and coaching legacies. | |
+| ![Advisors](docs/screenshots/advisors.jpg) | |
 
 ## Features
 
@@ -39,6 +41,12 @@ container and never leaves your machine.
   set / wedge / putter). Soft-retire keeps history without clutter.
 - **Videos** — quick bookmarks for YouTube coaching clips. Tap-to-open
   in your default browser.
+- **Advisors** — curated reading roster of golf teachers and pros
+  (Hogan, Penick, Nicklaus, Trevino, Harmon, Rotella, Utley, Woods).
+  Each advisor card carries a short bio, an era and specialty, a set
+  of "Key Teachings" written as actionable advice you can take to the
+  range, and their notable works. Read-only content; lives in
+  `Services/Advisors.swift` — easy to edit, reorder, or expand.
 - **Map** — MapKit satellite view with two-point geodesic distance
   measurement (CLLocation, USGA-friendly meters → yards). Address-based
   fly-to for any saved course.
