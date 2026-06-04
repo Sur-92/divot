@@ -73,13 +73,15 @@ struct BallsView: View {
     }
 
     // Column widths balance an 1100px window. Ball-name column flexes.
-    private let widthPrice: CGFloat = 56
-    private let widthPieces: CGFloat = 50
-    private let widthCover: CGFloat = 80
-    private let widthComp: CGFloat = 60
-    private let widthSpin: CGFloat = 60
-    private let widthFeel: CGFloat = 64
-    private let widthFit: CGFloat = 90
+    // Metric columns sized ~30% wider than the original draft so the
+    // info dot has breathing room and chip text doesn't truncate.
+    private let widthPrice: CGFloat = 73
+    private let widthPieces: CGFloat = 65
+    private let widthCover: CGFloat = 104
+    private let widthComp: CGFloat = 78
+    private let widthSpin: CGFloat = 78
+    private let widthFeel: CGFloat = 83
+    private let widthFit: CGFloat = 117
 
     private var matrixHeaderRow: some View {
         HStack(spacing: 8) {
