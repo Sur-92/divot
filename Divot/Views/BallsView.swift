@@ -83,30 +83,100 @@ struct BallsView: View {
 
     private var matrixHeaderRow: some View {
         HStack(spacing: 8) {
-            Text("BALL")
+            metricHeader("BALL", help: HelpText.ball)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text("$/DZ")
+            metricHeader("$/DZ", help: HelpText.price)
                 .frame(width: widthPrice, alignment: .trailing)
-            Text("BUILD")
+            metricHeader("BUILD", help: HelpText.build)
                 .frame(width: widthPieces, alignment: .center)
-            Text("COVER")
+            metricHeader("COVER", help: HelpText.cover)
                 .frame(width: widthCover, alignment: .leading)
-            Text("COMP")
+            metricHeader("COMP", help: HelpText.compression)
                 .frame(width: widthComp, alignment: .center)
-            Text("DRIVER")
+            metricHeader("DRIVER", help: HelpText.driverSpin)
                 .frame(width: widthSpin, alignment: .center)
-            Text("GREEN")
+            metricHeader("GREEN", help: HelpText.greensideSpin)
                 .frame(width: widthSpin, alignment: .center)
-            Text("FEEL")
+            metricHeader("FEEL", help: HelpText.feel)
                 .frame(width: widthFeel, alignment: .center)
-            Text("FIT")
+            metricHeader("FIT", help: HelpText.fit)
                 .frame(width: widthFit, alignment: .center)
         }
-        .font(.system(size: 9, weight: .bold))
-        .tracking(1.8)
-        .foregroundStyle(Theme.accent)
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
+    }
+
+    /// Column-header label with a tiny info dot. Hover the dot on
+    /// macOS and a native tooltip appears with the metric explanation.
+    private func metricHeader(_ label: String, help: String) -> some View {
+        HStack(spacing: 4) {
+            Text(label)
+                .font(.system(size: 9, weight: .bold))
+                .tracking(1.8)
+                .foregroundStyle(Theme.accent)
+            Image(systemName: "info.circle")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(Theme.dim)
+                .help(help)
+        }
+    }
+
+    /// Tooltip copy for each column. Plain-English, one-paragraph each.
+    private enum HelpText {
+        static let ball = """
+        The brand and model name. Cover + construction + compression \
+        together define how the ball behaves; the brand alone doesn't.
+        """
+        static let price = """
+        Current price per dozen in USD. Direct-to-consumer brands \
+        (Legato, Snell, Vice) skip retail markup; major-brand prices \
+        reflect MSRP and typical street price.
+        """
+        static let build = """
+        Number of layers in the ball. More pieces (4-5) let engineers \
+        tune each layer for a specific job — high-compression core for \
+        distance, soft mantle for spin, urethane skin for greenside \
+        feel. Three-piece balls do the same with fewer trade-offs.
+        """
+        static let cover = """
+        Outer material. Urethane is soft, grabs grooves, and produces \
+        high greenside spin — the mark of a tour ball. Surlyn / ionomer \
+        is harder, more durable, kills wedge spin — used on distance \
+        and value balls.
+        """
+        static let compression = """
+        How much the ball deforms at impact (0-110 scale). Lower = \
+        softer feel, energy transfer at slower swing speeds (good \
+        for sub-90 mph). Higher = firmer, optimal at 100+ mph. A \
+        mid-90s number matches the ~100 mph driver swing in this app.
+        """
+        static let driverSpin = """
+        How much backspin the ball generates off the driver. \
+        LOW = less side spin on off-line strikes, longer rollout, \
+        better for high-spin players. MID = balanced and forgiving. \
+        HIGH = launches and stays in the air longer, amplifies any \
+        slice/hook tendency.
+        """
+        static let greensideSpin = """
+        How much the ball checks up on pitch, chip, and wedge shots. \
+        HIGH = stops on the green where it lands — the signature of \
+        a urethane tour ball. LOW = rolls out after landing, worse \
+        for short-game scoring.
+        """
+        static let feel = """
+        Subjective sensation off the clubface and putter. SOFT = \
+        muted, "buttery" — feedback is in the hands. MEDIUM = \
+        balanced. FIRM = audible click, sharper feedback. Pure \
+        preference; not a performance number.
+        """
+        static let fit = """
+        How well this ball matches THIS player's profile (14 hcp, \
+        ~100 mph swing, push pattern, forged irons). GAMER = \
+        currently in the bag. BENCHMARK = the standard others get \
+        judged against. ALT = strong alternative, trial-worthy. \
+        SLEEPER = less obvious pick worth trying. AVOID = wrong \
+        fit for this profile.
+        """
     }
 
     private func matrixRow(ball: Ball, isAlternate: Bool) -> some View {
