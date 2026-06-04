@@ -108,19 +108,72 @@ struct BallsView: View {
         .padding(.vertical, 12)
     }
 
-    /// Column-header label with a tiny info dot. Hover the dot on
-    /// macOS and a native tooltip appears with the metric explanation.
+    /// Tracks which column's help popover is open. Only one open at a
+    /// time; clicking a second info dot moves the popover to that one.
+    @State private var activeHelp: String?
+
+    /// Column-header label with a clickable info dot. Click reveals a
+    /// styled popover with the metric explanation; click outside or
+    /// click again to dismiss. Native hover tooltip is kept as a
+    /// fallback in case the user just hovers.
     private func metricHeader(_ label: String, help: String) -> some View {
-        HStack(spacing: 4) {
+        let isShowing = Binding<Bool>(
+            get: { activeHelp == help },
+            set: { showing in
+                if showing { activeHelp = help }
+                else if activeHelp == help { activeHelp = nil }
+            }
+        )
+        return HStack(spacing: 4) {
             Text(label)
                 .font(.system(size: 9, weight: .bold))
                 .tracking(1.8)
                 .foregroundStyle(Theme.accent)
-            Image(systemName: "info.circle")
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(Theme.dim)
-                .help(help)
+            Button {
+                isShowing.wrappedValue.toggle()
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(activeHelp == help
+                                     ? Theme.accent
+                                     : Theme.dim)
+                    .contentShape(Rectangle().inset(by: -4))
+            }
+            .buttonStyle(.plain)
+            .help(help)
+            .popover(isPresented: isShowing, arrowEdge: .bottom) {
+                helpPopover(title: label, body: help)
+            }
         }
+    }
+
+    /// Reusable styled card shown inside a column's info popover.
+    private func helpPopover(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 10, weight: .bold))
+                .tracking(2)
+                .foregroundStyle(Theme.accent)
+            Text(body)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+                .lineSpacing(3)
+        }
+        .padding(16)
+        .frame(width: 300)
+        .background(
+            ZStack {
+                Color.black.opacity(0.92)
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.06, green: 0.14, blue: 0.30).opacity(0.55),
+                        Color(red: 0.04, green: 0.10, blue: 0.22).opacity(0.65)
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+            }
+        )
     }
 
     /// Tooltip copy for each column. Plain-English, one-paragraph each.
