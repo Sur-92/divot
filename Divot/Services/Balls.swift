@@ -93,6 +93,20 @@ enum Balls {
             take: "Pro V1's quiet rival — comparable construction, comparable spin numbers, softer feel signature, $10/dozen cheaper. Many teaching pros play this and don't talk about it. The value pick within the legitimate premium tier."),
 
         Ball(
+            brand: "Srixon",
+            model: "Q-Star Tour",
+            pieces: 3,
+            cover: .urethane,
+            compression: 74,
+            driverSpin: .mid,
+            greensideSpin: .high,
+            feel: .soft,
+            pricePerDozen: 40,
+            fit: .alt,
+            bestFor: "~100 mph swings wanting urethane spin at a softer compression than Z-Star",
+            take: "The Z-Star's softer, cheaper sibling — same urethane greenside grip and Spin Skin+ coating, but 74 compression that arguably suits a ~100 mph swing better than the firmer Z-Star (90). Mid flight, full greenside spin, $40/dozen. One of the strongest balanced-ball values in the field and a real rival to the Legato on feel. (\"Q-Star\" now means the Tour; the old plain distance Q-Star is the Q-Star UltiSpeed.)"),
+
+        Ball(
             brand: "Callaway",
             model: "Chrome Tour",
             pieces: 4,
@@ -133,6 +147,20 @@ enum Balls {
             fit: .alt,
             bestFor: "Players who specifically want max layers / tunability",
             take: "Five-piece construction marketed as the most tunable to swing speed. Slightly different feel than Titleist's three-piece. Cold-weather feel softens more than Pro V1 — worth knowing for spring PA rounds."),
+
+        Ball(
+            brand: "Bridgestone",
+            model: "e12 Contact",
+            pieces: 3,
+            cover: .ionomer,
+            compression: 61,
+            driverSpin: .low,
+            greensideSpin: .low,
+            feel: .soft,
+            pricePerDozen: 30,
+            fit: .alt,
+            bestFor: "Push / slice players who'll trade greenside bite for the straightest flight",
+            take: "The e12's whole identity is straight flight — low driver spin and the Contact Force Dimple cut sidespin, which directly counters a push off the tee. Genuinely relevant to your miss. The catch is the ionomer cover: greenside spin is a clear step below the urethane balls here, so wedges release more. The opposite tradeoff from the Legato — pick it if tee-to-fairway accuracy matters to you more than stop-on-the-green spin. (This is the straight-flight e12; current model name is \"e12 Contact.\")"),
 
         Ball(
             brand: "Titleist",
