@@ -11,10 +11,12 @@ struct StatsView: View {
 
     private var played: [Round] {
         // Strict pool — excludes reconstructed rounds (their FIR/GIR/putts
-        // are synthetic). Used for averages, FIR/GIR/putts/hole, low
-        // round, and the FIR/GIR/putts chart modes.
+        // are synthetic) and par-3 course rounds (not competitive golf).
+        // Used for averages, FIR/GIR/putts/hole, low round, and the
+        // FIR/GIR/putts chart modes.
         rounds.filter {
-            $0.totalScore > 0 && !$0.isArchived && !$0.isReconstructed
+            $0.totalScore > 0 && !$0.isArchived
+                && !$0.isReconstructed && !$0.isParThreeCourse
         }
     }
 
@@ -22,9 +24,12 @@ struct StatsView: View {
     /// ones. Round totals are always accurate (reconstructed scores were
     /// distributed across holes to match the known total), so this pool
     /// is safe for: the round count, the Last 5 list, and the score-
-    /// based chart modes (vs Par / 9 and Score / 9).
+    /// based chart modes (vs Par / 9 and Score / 9). Par-3 course rounds
+    /// are still excluded — par-3 play belongs in Practice, not the stats.
     private var allRounds: [Round] {
-        rounds.filter { $0.totalScore > 0 && !$0.isArchived }
+        rounds.filter {
+            $0.totalScore > 0 && !$0.isArchived && !$0.isParThreeCourse
+        }
     }
 
     private var played18: [Round] { played.filter { $0.holeCount == 18 } }

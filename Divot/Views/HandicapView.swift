@@ -37,7 +37,13 @@ struct HandicapView: View {
         // hole at par + 2 — exactly the net-double-bogey ceiling the
         // WHS adjusted-gross calculation uses. So adjusted gross equals
         // raw total on these rounds and the differential is correct.
-        rounds.filter { $0.isComplete && !$0.isArchived }
+        //
+        // Par-3 course rounds are excluded — they're treated as practice,
+        // and their unrated tees / low raw scores don't belong in the
+        // WHS differential pool.
+        rounds.filter {
+            $0.isComplete && !$0.isArchived && !$0.isParThreeCourse
+        }
     }
 
     /// 9-hole rounds that don't have a partner yet — oldest leftover first.

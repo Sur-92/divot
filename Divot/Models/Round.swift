@@ -140,6 +140,16 @@ final class Round {
         !holes.isEmpty && holes.allSatisfy { $0.score > 0 }
     }
 
+    /// True when every hole is a par 3 — a par-3 / executive course round.
+    /// These are treated as practice, not competitive golf: Stats and
+    /// Handicap exclude them so their lower raw scores and unrated tees
+    /// don't distort per-9 averages or the differential pool. (Par-3 play
+    /// is normally logged as a Practice session; this is the safety net
+    /// for any par-3 round that still gets created.)
+    var isParThreeCourse: Bool {
+        !holes.isEmpty && holes.allSatisfy { $0.par == 3 }
+    }
+
     var totalScore: Int {
         holes.reduce(0) { $0 + $1.score }
     }
