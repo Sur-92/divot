@@ -37,6 +37,13 @@ struct RoundDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 14) {
+                    SectionLabel("Conditions", subtitle: "Course, situation, and how you felt")
+                    lostBallsRow
+                    ConditionsSection(round: round)
+                        .glassPanel(padding: 14)
+                }
+
+                VStack(alignment: .leading, spacing: 14) {
                     SectionLabel("Notes")
                     TextEditor(text: $round.notes)
                         .font(.system(size: 13))
@@ -490,6 +497,42 @@ struct RoundDetailView: View {
             }
         }
         if changed { try? modelContext.save() }
+    }
+
+    private var lostBallsRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "circle.dotted")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.accent.opacity(0.85))
+            Text("LOST BALLS")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(2)
+                .foregroundStyle(Theme.dim)
+            Spacer()
+            stepperButton(systemName: "minus") {
+                if round.lostBalls > 0 { round.lostBalls -= 1 }
+            }
+            Text("\(round.lostBalls)")
+                .font(.system(size: 18, weight: .semibold))
+                .monospacedDigit()
+                .foregroundStyle(round.lostBalls > 0 ? Theme.primaryText : Theme.dim)
+                .frame(minWidth: 34)
+            stepperButton(systemName: "plus") {
+                round.lostBalls += 1
+            }
+        }
+        .glassPanel(padding: 12)
+    }
+
+    private func stepperButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 30, height: 30)
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.accent.opacity(0.6), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     private var summaryPanel: some View {

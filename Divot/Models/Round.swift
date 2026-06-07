@@ -108,6 +108,41 @@ final class Round {
     var hasTeeTime: Bool { teeTimeMinutes >= 0 }
     var hasNineWeather: Bool { frontCode >= 0 }
 
+    /// Total balls lost during the round.
+    var lostBalls: Int = 0
+
+    /// Per-nine conditions (course surface, situation, player state), stored
+    /// as JSON. TEXT column → SQLite-safe and tolerant of schema growth.
+    /// Empty string decodes to all-defaults.
+    var frontConditions: String = ""
+    var backConditions: String = ""
+
+    /// Decoded views of the conditions JSON. Reading/writing these round-trips
+    /// through the stored String, so SwiftData observes the change and saves.
+    var frontConditionsValue: NineConditions {
+        get { Self.decodeConditions(frontConditions) }
+        set { frontConditions = Self.encodeConditions(newValue) }
+    }
+    var backConditionsValue: NineConditions {
+        get { Self.decodeConditions(backConditions) }
+        set { backConditions = Self.encodeConditions(newValue) }
+    }
+
+    /// True if any condition is recorded on either nine.
+    var hasConditions: Bool {
+        !frontConditionsValue.isEmpty || !backConditionsValue.isEmpty
+    }
+
+    private static func decodeConditions(_ s: String) -> NineConditions {
+        guard let data = s.data(using: .utf8), !data.isEmpty,
+              let v = try? JSONDecoder().decode(NineConditions.self, from: data)
+        else { return NineConditions() }
+        return v
+    }
+    private static func encodeConditions(_ v: NineConditions) -> String {
+        (try? JSONEncoder().encode(v)).flatMap { String(data: $0, encoding: .utf8) } ?? ""
+    }
+
     /// Optional link to a saved Course. Round values above remain as a snapshot
     /// (rating/slope/tees) so old rounds aren't retroactively changed by course edits.
     var course: Course?
