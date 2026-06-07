@@ -77,7 +77,7 @@ struct FlagSpec: Identifiable {
 /// Add an entry here (and a field on `NineConditions`) to add a condition.
 enum ConditionsCatalog {
     static let graded: [GradedSpec] = [
-        .init(id: "greenSpeed",   label: "Speed",    keyPath: \.greenSpeed,   options: ["Slow", "Med", "Fast"],            category: .greens),
+        .init(id: "greenSpeed",   label: "Speed",    keyPath: \.greenSpeed,   options: ["Very Slow", "Slow", "Med-Slow", "Medium", "Med-Fast", "Fast", "Very Fast"], category: .greens),
         .init(id: "greenFirm",    label: "Firmness", keyPath: \.greenFirmness,options: ["Soft", "Med", "Firm"],            category: .greens),
         .init(id: "fairways",     label: "Fairways", keyPath: \.fairways,     options: ["Wet", "Normal", "Firm"],          category: .turf),
         .init(id: "rough",        label: "Rough",    keyPath: \.rough,        options: ["Light", "Med", "Heavy"],          category: .turf),

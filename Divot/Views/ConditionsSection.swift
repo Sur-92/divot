@@ -86,12 +86,18 @@ struct ConditionsSection: View {
                     .foregroundStyle(Theme.accent.opacity(0.85))
 
                 ForEach(graded) { spec in
-                    HStack(spacing: 12) {
+                    let wide = spec.options.count > 3   // numbered scale vs word picker
+                    HStack(alignment: wide ? .top : .center, spacing: 12) {
                         Text(spec.label)
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.dim)
                             .frame(width: 78, alignment: .leading)
-                        TriPicker(options: spec.options, value: gradedBinding(spec.keyPath))
+                            .padding(.top, wide ? 5 : 0)
+                        if wide {
+                            ScalePicker(options: spec.options, value: gradedBinding(spec.keyPath))
+                        } else {
+                            TriPicker(options: spec.options, value: gradedBinding(spec.keyPath))
+                        }
                     }
                 }
 
@@ -140,6 +146,59 @@ private struct TriPicker: View {
         }
         .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.hairline, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+}
+
+// MARK: - Numbered scale picker (for many-level graded items, e.g. green speed)
+
+private struct ScalePicker: View {
+    let options: [String]     // descriptor per level; index 0 = level 1
+    @Binding var value: Int   // 0 = unset, 1...options.count
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 0) {
+                ForEach(0..<options.count, id: \.self) { idx in
+                    let v = idx + 1
+                    let selected = value == v
+                    Button {
+                        value = selected ? 0 : v
+                    } label: {
+                        Text("\(v)")
+                            .font(.system(size: 10, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(selected ? .black : Theme.dim)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(selected ? Theme.accent : Color.clear)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    if idx < options.count - 1 {
+                        Rectangle().fill(Theme.hairline).frame(width: 1)
+                    }
+                }
+            }
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.hairline, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+
+            // Anchors + the selected level's plain-English descriptor.
+            HStack {
+                Text("SLOW")
+                    .font(.system(size: 8, weight: .medium)).tracking(0.5)
+                    .foregroundStyle(Theme.dimmer)
+                Spacer()
+                if value > 0, value <= options.count {
+                    Text(options[value - 1])
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Theme.accent)
+                }
+                Spacer()
+                Text("FAST")
+                    .font(.system(size: 8, weight: .medium)).tracking(0.5)
+                    .foregroundStyle(Theme.dimmer)
+            }
+        }
     }
 }
 
