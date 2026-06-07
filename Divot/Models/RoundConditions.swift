@@ -10,9 +10,10 @@ import Foundation
 /// Checkboxes default false. A clean round needs zero input — defaults read
 /// as "nothing notable."
 struct NineConditions: Codable, Equatable {
-    // Graded (3-way) — 0 = unset
-    var greenSpeed = 0
+    // Graded (3-way unless noted) — 0 = unset
+    var greenSpeed = 0      // 7-level
     var greenFirmness = 0
+    var tees = 0            // tee-box condition: Poor / Fair / Good
     var fairways = 0
     var rough = 0
     var pace = 0
@@ -24,6 +25,7 @@ struct NineConditions: Codable, Equatable {
     var greensSanded = false
     var poorBunkers = false
     var cartPathOnly = false
+    var roughPaths = false      // paths unpaved / rocky / dirt
     var casualWater = false
     var leavesDown = false
     var frostDelay = false
@@ -36,11 +38,12 @@ struct NineConditions: Codable, Equatable {
 
     /// True when nothing has been recorded for this nine.
     var isEmpty: Bool {
-        greenSpeed == 0 && greenFirmness == 0 && fairways == 0 && rough == 0
-            && pace == 0 && feel == 0 && anxiety == 0
+        greenSpeed == 0 && greenFirmness == 0 && tees == 0 && fairways == 0
+            && rough == 0 && pace == 0 && feel == 0 && anxiety == 0
             && !greensBumpy && !greensSanded && !poorBunkers && !cartPathOnly
-            && !casualWater && !leavesDown && !frostDelay && !backedUp
-            && !solo && !familiarGroup && !strangers && !socialPressure && !tired
+            && !roughPaths && !casualWater && !leavesDown && !frostDelay
+            && !backedUp && !solo && !familiarGroup && !strangers
+            && !socialPressure && !tired
     }
 }
 
@@ -79,6 +82,7 @@ enum ConditionsCatalog {
     static let graded: [GradedSpec] = [
         .init(id: "greenSpeed",   label: "Speed",    keyPath: \.greenSpeed,   options: ["Very Slow", "Slow", "Med-Slow", "Medium", "Med-Fast", "Fast", "Very Fast"], category: .greens),
         .init(id: "greenFirm",    label: "Firmness", keyPath: \.greenFirmness,options: ["Soft", "Med", "Firm"],            category: .greens),
+        .init(id: "tees",         label: "Tees",     keyPath: \.tees,         options: ["Poor", "Fair", "Good"],           category: .turf),
         .init(id: "fairways",     label: "Fairways", keyPath: \.fairways,     options: ["Wet", "Normal", "Firm"],          category: .turf),
         .init(id: "rough",        label: "Rough",    keyPath: \.rough,        options: ["Light", "Med", "Heavy"],          category: .turf),
         .init(id: "pace",         label: "Pace",     keyPath: \.pace,         options: ["Quick", "Normal", "Slow"],        category: .pace),
@@ -91,6 +95,7 @@ enum ConditionsCatalog {
         .init(id: "greensSanded",  label: "Recently sanded",       keyPath: \.greensSanded,   category: .greens),
         .init(id: "poorBunkers",   label: "Poor bunkers",          keyPath: \.poorBunkers,    category: .turf),
         .init(id: "cartPathOnly",  label: "Cart-path-only",        keyPath: \.cartPathOnly,   category: .maintenance),
+        .init(id: "roughPaths",    label: "Rough / dirt paths",    keyPath: \.roughPaths,     category: .maintenance),
         .init(id: "casualWater",   label: "Casual water / wet",    keyPath: \.casualWater,    category: .maintenance),
         .init(id: "leavesDown",    label: "Leaves down",           keyPath: \.leavesDown,     category: .maintenance),
         .init(id: "frostDelay",    label: "Frost delay",           keyPath: \.frostDelay,     category: .maintenance),
