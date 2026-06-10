@@ -433,7 +433,7 @@ struct StartRoundSheet: View {
             }
         }
         modelContext.insert(round)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         // Audit
         let courseLabel = round.courseName.isEmpty ? "Untitled Round" : round.courseName

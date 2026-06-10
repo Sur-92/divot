@@ -189,7 +189,7 @@ struct PracticeListView: View {
     private func addSession() {
         let session = PracticeSession(date: .now, type: .drivingRange)
         modelContext.insert(session)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "PracticeSession",
@@ -206,7 +206,7 @@ struct PracticeListView: View {
         let label = session.location.isEmpty ? session.type.displayName : session.location
         let id = session.idempotencyKey
         modelContext.delete(session)
-        try? modelContext.save()
+        modelContext.saveOrReport()
         AuditService.shared.log(
             entityType: "PracticeSession",
             entityID: id,
@@ -218,7 +218,7 @@ struct PracticeListView: View {
 
     private func archive(_ session: PracticeSession) {
         session.isArchived = true
-        try? modelContext.save()
+        modelContext.saveOrReport()
         let label = session.location.isEmpty ? session.type.displayName : session.location
         AuditService.shared.log(
             entityType: "PracticeSession",
@@ -231,7 +231,7 @@ struct PracticeListView: View {
 
     private func restore(_ session: PracticeSession) {
         session.isArchived = false
-        try? modelContext.save()
+        modelContext.saveOrReport()
         let label = session.location.isEmpty ? session.type.displayName : session.location
         AuditService.shared.log(
             entityType: "PracticeSession",

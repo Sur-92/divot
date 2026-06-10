@@ -64,7 +64,7 @@ struct DriveMapView: View {
                     hole.hasDrive = false
                     hole.driveLat = 0
                     hole.driveLng = 0
-                    try? modelContext.save()
+                    modelContext.saveOrReport()
                 } label: {
                     Text("CLEAR DRIVE")
                         .font(.system(size: 9, weight: .semibold))
@@ -196,7 +196,7 @@ struct DriveMapView: View {
             courseHole?.greenLongitude = coord.longitude
             mode = .drive
         }
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     // MARK: - Distances
@@ -269,7 +269,7 @@ struct DriveMapView: View {
                 .first?.location else { return }
             course.latitude = loc.coordinate.latitude
             course.longitude = loc.coordinate.longitude
-            try? modelContext.save()
+            modelContext.saveOrReport()
             withAnimation(.easeInOut(duration: 0.4)) {
                 camera = .region(MKCoordinateRegion(center: loc.coordinate,
                     span: MKCoordinateSpan(latitudeDelta: 0.012, longitudeDelta: 0.012)))

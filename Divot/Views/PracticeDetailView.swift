@@ -252,18 +252,18 @@ struct PracticeDetailView: View {
 
     private func deleteSession() {
         modelContext.delete(session)
-        try? modelContext.save()
+        modelContext.saveOrReport()
         dismiss()
     }
 
     private func archive() {
         session.isArchived = true
-        try? modelContext.save()
+        modelContext.saveOrReport()
         dismiss()
     }
 
     private func restore() {
         session.isArchived = false
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 }

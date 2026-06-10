@@ -55,7 +55,7 @@ struct BackupButton: View {
     }
 
     private func backup() {
-        try? modelContext.save()
+        modelContext.saveOrReport()
         guard let docs else { message = "Backup unavailable"; isError = true; return }
         let trigger = docs.appendingPathComponent(".backup-trigger")
         let stamp = "\(Date().timeIntervalSince1970)"

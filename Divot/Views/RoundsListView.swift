@@ -194,17 +194,17 @@ struct RoundsListView: View {
 
     private func delete(_ round: Round) {
         modelContext.delete(round)
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     private func archive(_ round: Round) {
         round.isArchived = true
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     private func restore(_ round: Round) {
         round.isArchived = false
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 }
 

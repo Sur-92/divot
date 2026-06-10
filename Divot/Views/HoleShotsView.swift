@@ -295,7 +295,7 @@ struct HoleShotsView: View {
         shot.hole = hole
         hole.shots.append(shot)
         modelContext.insert(shot)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         let courseLabel = hole.round?.courseName ?? "round"
         AuditService.shared.log(
@@ -319,7 +319,7 @@ struct HoleShotsView: View {
         for (i, s) in hole.sortedShots.enumerated() {
             s.number = i + 1
         }
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "Shot",
@@ -341,7 +341,7 @@ struct HoleShotsView: View {
             } != nil
             return shotsToReachGreen >= (hole.par - 2) && reachedGreen
         }()
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 }
 

@@ -113,7 +113,7 @@ struct VideosView: View {
         .glassPanel(padding: 0)
         .sheet(item: $editing) { video in
             VideoEditSheet(video: video) {
-                try? modelContext.save()
+                modelContext.saveOrReport()
             }
         }
     }
@@ -124,7 +124,7 @@ struct VideosView: View {
         let maxOrder = bookmarks.map(\.sortOrder).max() ?? 0
         let video = VideoBookmark(sortOrder: maxOrder + 1)
         modelContext.insert(video)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "VideoBookmark",
@@ -145,7 +145,7 @@ struct VideosView: View {
         let label = video.displayTitle
         let id = video.idempotencyKey
         modelContext.delete(video)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "VideoBookmark",
@@ -165,7 +165,7 @@ struct VideosView: View {
         let tmp = video.sortOrder
         video.sortOrder = neighbour.sortOrder
         neighbour.sortOrder = tmp
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     /// If every bookmark has sortOrder 0, number them by addedAt newest-first.
@@ -176,7 +176,7 @@ struct VideosView: View {
         for (index, v) in ordered.enumerated() {
             v.sortOrder = index + 1
         }
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 }
 

@@ -184,13 +184,22 @@ struct ContentView: View {
             .padding(.bottom, 2)
     }
 
+    /// Real version from the bundle — "V 0.1 (137)" where the build number is
+    /// the CI run number, so you can tell exactly which build is running.
+    private static var versionString: String {
+        let info = Bundle.main.infoDictionary
+        let short = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return build == "1" || build == "?" ? "V \(short)" : "V \(short) (\(build))"
+    }
+
     private var footer: some View {
         VStack(alignment: .leading, spacing: 4) {
             Rectangle()
                 .fill(Theme.hairline)
                 .frame(height: 1)
             HStack {
-                Text("V 0.1")
+                Text(Self.versionString)
                     .font(.system(size: 9, weight: .medium))
                     .tracking(2)
                     .foregroundStyle(Theme.dimmer)

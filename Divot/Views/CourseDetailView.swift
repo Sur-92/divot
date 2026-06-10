@@ -63,7 +63,7 @@ struct CourseDetailView: View {
         }
         .onDisappear {
             syncTotalPar()
-            try? modelContext.save()
+            modelContext.saveOrReport()
         }
     }
 
@@ -312,7 +312,7 @@ struct CourseDetailView: View {
         tee.course = course
         course.tees.append(tee)
         modelContext.insert(tee)
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     private func deleteTee(_ tee: CourseTee) {
@@ -320,14 +320,14 @@ struct CourseDetailView: View {
             course.tees.remove(at: idx)
         }
         modelContext.delete(tee)
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     private func deleteCourse() {
         let label = course.name.isEmpty ? "Untitled Course" : course.name
         let id = course.idempotencyKey
         modelContext.delete(course)
-        try? modelContext.save()
+        modelContext.saveOrReport()
         AuditService.shared.log(
             entityType: "Course",
             entityID: id,

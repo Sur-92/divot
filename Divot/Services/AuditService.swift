@@ -72,7 +72,7 @@ final class AuditService {
             entryHash: entryHash
         )
         context.insert(entry)
-        try? context.save()
+        context.saveOrReport()
     }
 
     // MARK: - Reads

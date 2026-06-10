@@ -294,7 +294,7 @@ struct CoursesView: View {
         course.tees.append(tee)
         modelContext.insert(tee)
         modelContext.insert(course)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "Course",

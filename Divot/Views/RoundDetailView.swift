@@ -234,7 +234,7 @@ struct RoundDetailView: View {
                 round.teeTimeMinutes = h * 60 + m
                 round.frontCode = -1          // force a fresh per-nine fetch
                 round.backCode = -1
-                try? modelContext.save()
+                modelContext.saveOrReport()
             }
         )
     }
@@ -389,7 +389,7 @@ struct RoundDetailView: View {
             if round.roundType == .full18, let b = day.at(startH + 3) {   // mid back nine
                 round.backCode = b.code; round.backTempF = b.tempF; round.backWindMph = b.windMph
             }
-            try? modelContext.save()
+            modelContext.saveOrReport()
         } else {
             // No tee time → daily summary fallback.
             guard !round.hasWeather else { return }
@@ -402,7 +402,7 @@ struct RoundDetailView: View {
                 round.weatherLowF = w.lowF
                 round.weatherWindMph = w.windMph
                 round.weatherPrecipIn = w.precipIn
-                try? modelContext.save()
+                modelContext.saveOrReport()
             }
         }
     }
@@ -417,7 +417,7 @@ struct RoundDetailView: View {
             if let loc = (try? await geocoder.geocodeAddressString(addr))?.first?.location {
                 round.course?.latitude = loc.coordinate.latitude
                 round.course?.longitude = loc.coordinate.longitude
-                try? modelContext.save()
+                modelContext.saveOrReport()
                 return loc.coordinate
             }
         }
@@ -428,7 +428,7 @@ struct RoundDetailView: View {
         let label = round.courseName.isEmpty ? "Untitled Round" : round.courseName
         let id = round.idempotencyKey
         modelContext.delete(round)
-        try? modelContext.save()
+        modelContext.saveOrReport()
         AuditService.shared.log(
             entityType: "Round",
             entityID: id,
@@ -441,7 +441,7 @@ struct RoundDetailView: View {
 
     private func archiveRound() {
         round.isArchived = true
-        try? modelContext.save()
+        modelContext.saveOrReport()
         let label = round.courseName.isEmpty ? "Untitled Round" : round.courseName
         AuditService.shared.log(
             entityType: "Round",
@@ -455,7 +455,7 @@ struct RoundDetailView: View {
 
     private func restoreRound() {
         round.isArchived = false
-        try? modelContext.save()
+        modelContext.saveOrReport()
         let label = round.courseName.isEmpty ? "Untitled Round" : round.courseName
         AuditService.shared.log(
             entityType: "Round",
@@ -496,7 +496,7 @@ struct RoundDetailView: View {
                 }
             }
         }
-        if changed { try? modelContext.save() }
+        if changed { modelContext.saveOrReport() }
     }
 
     private var lostBallsRow: some View {

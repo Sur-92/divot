@@ -94,14 +94,14 @@ enum DataImporter {
             let all = (try? context.fetch(FetchDescriptor<BagClub>())) ?? []
             for club in all { context.delete(club) }
             deletedClubs = all.count
-            try? context.save()
+            context.saveOrReport()
         }
         var deletedCourses = 0
         if reset.contains("courses") {
             let all = (try? context.fetch(FetchDescriptor<Course>())) ?? []
             for course in all { context.delete(course) }   // cascades to holes/tees
             deletedCourses = all.count
-            try? context.save()
+            context.saveOrReport()
         }
 
         var insertedClubs = 0
@@ -112,7 +112,7 @@ enum DataImporter {
         if let courses = payload.courses {
             insertedCourses += importCourses(courses, context: context)
         }
-        try? context.save()
+        context.saveOrReport()
 
         // Rename so the import doesn't re-run on the next launch.
         let stamp = ISO8601DateFormatter().string(from: .now)

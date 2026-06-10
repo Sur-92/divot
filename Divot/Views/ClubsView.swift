@@ -62,7 +62,7 @@ struct ClubsView: View {
         for (index, club) in ordered.enumerated() {
             club.bagOrder = index + 1
         }
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 
     var body: some View {
@@ -298,7 +298,7 @@ struct ClubsView: View {
             bagOrder: maxOrder + 1
         )
         modelContext.insert(club)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "BagClub",
@@ -313,7 +313,7 @@ struct ClubsView: View {
         let label = club.displayTitle
         let id = club.idempotencyKey
         modelContext.delete(club)
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "BagClub",
@@ -329,7 +329,7 @@ struct ClubsView: View {
     private func retireClub(_ club: BagClub) {
         club.isRetired = true
         club.retiredAt = .now
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "BagClub",
@@ -346,7 +346,7 @@ struct ClubsView: View {
         club.isRetired = false
         club.retiredAt = nil
         club.bagOrder = maxOrder + 1
-        try? modelContext.save()
+        modelContext.saveOrReport()
 
         AuditService.shared.log(
             entityType: "BagClub",
@@ -367,7 +367,7 @@ struct ClubsView: View {
         let tmp = club.bagOrder
         club.bagOrder = neighbour.bagOrder
         neighbour.bagOrder = tmp
-        try? modelContext.save()
+        modelContext.saveOrReport()
     }
 }
 
