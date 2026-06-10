@@ -39,13 +39,18 @@ targets:
         SWIFT_EMIT_LOC_STRINGS: YES
         COMBINE_HIDPI_IMAGES: YES
 
+  # Standalone logic-test bundle — deliberately NOT hosted in the app.
+  # App-hosted (TEST_HOST) runs crashed: the running Divot app already owns
+  # a ModelContainer for these @Model classes, and creating a second
+  # container for the same classes in one process is a known SwiftData
+  # crash. Compiling the (UI-free) model sources directly into the bundle
+  # gives the test process exactly one container and skips the app launch.
   DivotTests:
     type: bundle.unit-test
     platform: macOS
     sources:
       - path: Tests
-    dependencies:
-      - target: Divot
+      - path: Divot/Models
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

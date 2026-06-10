@@ -1,6 +1,5 @@
 import XCTest
 import SwiftData
-@testable import Divot
 
 /// Covers the WHS differential math, per-9 normalization, and the round-pool
 /// eligibility policy. Uses an in-memory SwiftData store so Round/Hole behave
@@ -23,11 +22,12 @@ final class HandicapMathTests: XCTestCase {
         let r = Round(date: Date(timeIntervalSince1970: 0), courseName: "Test",
                       tees: "White", courseRating: rating, slopeRating: slope)
         ctx.insert(r)
+        // Same wiring as StartRoundSheet: set the inverse + append; the
+        // relationship graph carries the holes into the context.
         for i in 1...n {
             let h = Hole(number: i, par: par, score: score)
             h.round = r
             r.holes.append(h)
-            ctx.insert(h)
         }
         return r
     }

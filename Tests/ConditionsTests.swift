@@ -1,5 +1,4 @@
 import XCTest
-@testable import Divot
 
 final class ConditionsTests: XCTestCase {
     func testRoundTrip() throws {
