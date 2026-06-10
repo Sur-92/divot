@@ -206,16 +206,10 @@ final class Round {
 
     /// Score normalized to a per-9-holes basis — handles 9- and 18-hole
     /// rounds fairly. A 44 on 9 and an 84 on 18 both read as ~44/9.
-    var scorePer9: Double {
-        guard holeCount > 0 else { return 0 }
-        return Double(totalScore) / Double(holeCount) * 9
-    }
+    var scorePer9: Double { ScoringMath.per9(totalScore, holeCount: holeCount) }
 
     /// Score-to-par normalized per 9 holes. A +8 on 9 and +16 on 18 match.
-    var scoreToParPer9: Double {
-        guard holeCount > 0 else { return 0 }
-        return Double(scoreToPar) / Double(holeCount) * 9
-    }
+    var scoreToParPer9: Double { ScoringMath.per9(scoreToPar, holeCount: holeCount) }
 
     var par4Or5Holes: [Hole] {
         holes.filter { $0.par >= 4 }
@@ -263,15 +257,14 @@ final class Round {
     /// the World Handicap System (Rule 5.1 / Appendix E).
     var scoreDifferential: Double {
         guard slopeRating > 0, isComplete else { return 0 }
-        let adjusted = holes.reduce(0) { sum, hole in
-            let netDoubleBogey = hole.par + 2
-            return sum + min(hole.score, netDoubleBogey)
-        }
+        let adjusted = ScoringMath.adjustedGross(pars: holes.map(\.par),
+                                                 scores: holes.map(\.score))
         // courseRating on the round is snapshotted from the 18-hole tee
         // rating. For a 9-hole round we halve it — the USGA 9-hole rating
         // on the same tees.
         let rating = holeCount == 9 ? courseRating / 2.0 : courseRating
-        return (113.0 / Double(slopeRating)) * (Double(adjusted) - rating)
+        return ScoringMath.differential(adjustedGross: adjusted,
+                                        rating: rating, slope: slopeRating)
     }
 }
 
