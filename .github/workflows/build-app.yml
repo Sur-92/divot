@@ -11,6 +11,32 @@ on:
       - '.github/workflows/build-app.yml'
 
 jobs:
+  # Unit tests run in parallel with the build. A failure surfaces (red X)
+  # but does NOT block artifact production — this is a personal app shipped
+  # by downloading the artifact, so a flaky/failed test shouldn't gate a
+  # deploy. Treat it as a safety net, not a hard gate.
+  test:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Select Xcode 26.5
+        run: sudo xcode-select -s /Applications/Xcode_26.5.app
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project from project.yml
+        run: xcodegen generate
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Divot.xcodeproj \
+            -scheme Divot \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
   build:
     runs-on: macos-26
     steps:

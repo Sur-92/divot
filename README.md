@@ -21,7 +21,7 @@ container and never leaves your machine.
 | ![Stats](docs/screenshots/stats.jpg) | ![Handicap](docs/screenshots/handicap.jpg) |
 | **Map** — MapKit satellite, geocoded fly‑to for any saved course, two‑point geodesic distance measurement in yards. | **PGA** — current tournament leaderboard and news from ESPN + PGA Tour, weather for the host course. Handles team events. |
 | ![Map](docs/screenshots/map.jpg) | ![PGA](docs/screenshots/pga.jpg) |
-| **Videos** — bookmark coaching clips, auto‑extracts YouTube IDs, opens in your browser. | **Audit log** — append‑only hash‑chained record of every meaningful write. Tamper‑evident. |
+| **Videos** — bookmark coaching clips, auto‑extracts YouTube IDs, opens in your browser. | **Audit log** — append‑only hash‑chained record of every meaningful write; the chain detects corruption and out‑of‑band edits. |
 | ![Videos](docs/screenshots/videos.jpg) | ![Audit](docs/screenshots/audit.jpg) |
 | **Advisors** — curated reading on the teachers who shaped the modern game. Eight pros, each with bio, era, specialty, and 5 actionable "Key Teachings" pulled from their books and coaching legacies. | |
 | ![Advisors](docs/screenshots/advisors.jpg) | |

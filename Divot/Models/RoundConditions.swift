@@ -45,6 +45,45 @@ struct NineConditions: Codable, Equatable {
             && !backedUp && !solo && !familiarGroup && !strangers
             && !socialPressure && !tired
     }
+
+    init() {}
+
+    /// Field-tolerant decoding. Swift's synthesized `Decodable` THROWS on a
+    /// missing key — so adding a field would make every previously-stored
+    /// round's JSON fail to decode and silently reset to defaults. This
+    /// decodes each field with `decodeIfPresent`, falling back to the
+    /// property default, so old JSON survives schema growth (the whole
+    /// reason conditions are stored as JSON). `Encodable` stays synthesized.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        // `try? decode` yields nil for a missing OR type-mismatched key,
+        // then falls back to the default — tolerant of both schema growth
+        // and partially-corrupt JSON.
+        func int(_ k: CodingKeys) -> Int { (try? c.decode(Int.self, forKey: k)) ?? 0 }
+        func flag(_ k: CodingKeys) -> Bool { (try? c.decode(Bool.self, forKey: k)) ?? false }
+        greenSpeed     = int(.greenSpeed)
+        greenFirmness  = int(.greenFirmness)
+        tees           = int(.tees)
+        fairways       = int(.fairways)
+        rough          = int(.rough)
+        pace           = int(.pace)
+        feel           = int(.feel)
+        anxiety        = int(.anxiety)
+        greensBumpy    = flag(.greensBumpy)
+        greensSanded   = flag(.greensSanded)
+        poorBunkers    = flag(.poorBunkers)
+        cartPathOnly   = flag(.cartPathOnly)
+        roughPaths     = flag(.roughPaths)
+        casualWater    = flag(.casualWater)
+        leavesDown     = flag(.leavesDown)
+        frostDelay     = flag(.frostDelay)
+        backedUp       = flag(.backedUp)
+        solo           = flag(.solo)
+        familiarGroup  = flag(.familiarGroup)
+        strangers      = flag(.strangers)
+        socialPressure = flag(.socialPressure)
+        tired          = flag(.tired)
+    }
 }
 
 /// Display grouping for the conditions editor.

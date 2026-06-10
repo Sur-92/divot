@@ -2,13 +2,22 @@ import Foundation
 import SwiftData
 import CryptoKit
 
-/// Append-only, hash-chained audit record.
+/// Append-only, hash-chained change log.
 ///
 /// Every meaningful write to the app's data (round created, shot deleted,
-/// course edited, etc.) appends one row to this table. Each row carries
-/// `previousHash` (the hash of the prior entry) and `hash` (SHA-256 of
-/// `previousHash + <canonical content>`). Any tampering with the log
-/// breaks the chain and is detectable via `AuditService.verify()`.
+/// course edited, etc.) appends one row. Each row carries `previousHash`
+/// (the prior entry's hash) and `entryHash` (SHA-256 of `previousHash +
+/// <canonical content>`). `AuditService.verify()` walks the chain and
+/// flags any break in continuity.
+///
+/// Scope of the guarantee: this detects *accidental* corruption and
+/// out-of-band edits that don't recompute the chain. It is NOT
+/// cryptographically tamper-proof — the hash is unkeyed, so anyone who
+/// can rewrite the store could also recompute every downstream hash, and
+/// truncating the newest rows leaves a shorter-but-valid chain. For a
+/// single-user local app that's the right trade; don't market it as
+/// tamper-proof. (A keyed HMAC + an external high-water mark would close
+/// both gaps if this ever needs to be adversarial.)
 @Model
 final class AuditEntry {
     /// Monotonic sequence counter — entry #1, #2, #3…
