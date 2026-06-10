@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - 'Divot/**'
+      - 'Tests/**'
       - 'project.yml'
       - 'Divot.xcodeproj/**'
       - '.github/workflows/build-app.yml'
