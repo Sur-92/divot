@@ -70,9 +70,12 @@ final class Round {
 
     /// Marks rounds whose hole-by-hole data is partial or estimated — e.g.
     /// rounds reconstructed from old screenshots where the totals are
-    /// known but individual hole scores had to be synthesized. Stats and
-    /// Handicap exclude these so the calculations stay honest. The round
-    /// still appears on the main Rounds list with a small badge.
+    /// known but individual hole scores had to be synthesized. STATS
+    /// excludes these (their FIR/GIR/putts are synthetic), but HANDICAP
+    /// INCLUDES them: the totals are accurate and the synthetic per-hole
+    /// scores are capped at par+2, exactly the net-double-bogey ceiling the
+    /// differential uses, so the differential stays valid. The round shows
+    /// on the main Rounds list with a small badge.
     var isReconstructed: Bool = false
 
     /// When the parent course is an indoor simulator (`Course.isSimulator`),
@@ -269,5 +272,44 @@ final class Round {
         // on the same tees.
         let rating = holeCount == 9 ? courseRating / 2.0 : courseRating
         return (113.0 / Double(slopeRating)) * (Double(adjusted) - rating)
+    }
+}
+
+// MARK: - Round-pool eligibility
+//
+// The app's data-honesty policy lives here, next to the flags it reads, so
+// every consumer (Stats, Handicap, future views) shares one definition.
+// A view that hand-rolls its own filter is the bug this prevents.
+extension Round {
+    /// Totals are trustworthy. Reconstructed rounds qualify (their totals
+    /// sum correctly even if hole detail was synthesized); par-3 course
+    /// rounds and archived rounds do not (par-3 play is practice).
+    var isScoringEligible: Bool {
+        totalScore > 0 && !isArchived && !isParThreeCourse
+    }
+
+    /// Strict pool — per-hole fields (fairways / GIR / putts) are real, not
+    /// synthesized. Used for the rate-based stats. Excludes reconstructed.
+    var isStatsEligible: Bool {
+        isScoringEligible && !isReconstructed
+    }
+
+    /// Eligible for the WHS differential pool: a complete card on a rated
+    /// tee (slope > 0 — unrated/par-3 tees can't produce a valid
+    /// differential, and a slope of 0 would otherwise yield a fake 0.0),
+    /// not archived, not a par-3 course.
+    var isHandicapEligible: Bool {
+        isComplete && !isArchived && !isParThreeCourse && slopeRating > 0
+    }
+}
+
+// MARK: - Score formatting
+
+extension Int {
+    /// Score relative to par, rendered consistently everywhere:
+    /// "-2" / "E" / "+3". Replaces the ad-hoc `sign + value` strings that
+    /// disagreed on even par ("E" in some views, "+0" in others).
+    var toParText: String {
+        self == 0 ? "E" : (self > 0 ? "+\(self)" : "\(self)")
     }
 }

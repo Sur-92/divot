@@ -30,20 +30,12 @@ struct HandicapView: View {
         var isPaired: Bool { rounds.count == 2 }
     }
 
+    // Reconstructed rounds ARE included (accurate totals, synthetic holes
+    // capped at the net-double-bogey ceiling). Par-3 rounds, archived
+    // rounds, and unrated tees (slope 0 — which would yield a fake 0.0
+    // differential) are excluded. See Round.isHandicapEligible.
     private var complete: [Round] {
-        // Reconstructed rounds ARE included. Their totals are accurate
-        // (synthetic hole scores were distributed to match the known
-        // total) and the distribution algorithm caps each synthetic
-        // hole at par + 2 — exactly the net-double-bogey ceiling the
-        // WHS adjusted-gross calculation uses. So adjusted gross equals
-        // raw total on these rounds and the differential is correct.
-        //
-        // Par-3 course rounds are excluded — they're treated as practice,
-        // and their unrated tees / low raw scores don't belong in the
-        // WHS differential pool.
-        rounds.filter {
-            $0.isComplete && !$0.isArchived && !$0.isParThreeCourse
-        }
+        rounds.filter(\.isHandicapEligible)
     }
 
     /// 9-hole rounds that don't have a partner yet — oldest leftover first.
@@ -344,7 +336,9 @@ struct HandicapView: View {
         normalizes a round across course difficulty so a 90 at a \
         hard track and a 90 at an easy track aren't treated the \
         same. Lower is better. Adjusted Gross caps each hole at \
-        net double bogey (par + 2 + handicap strokes).
+        par + 2. (Strict WHS adds your handicap strokes on top of \
+        that cap; this app uses the simpler flat par + 2, which can \
+        read marginally low on your hardest holes.)
         """
     }
 

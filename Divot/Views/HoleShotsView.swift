@@ -67,8 +67,7 @@ struct HoleShotsView: View {
                         .foregroundStyle(Theme.accent)
                     if hole.score > 0 {
                         let diff = hole.score - hole.par
-                        let sign = diff >= 0 ? "+" : ""
-                        Text("SCORE \(hole.score) (\(sign)\(diff))")
+                        Text("SCORE \(hole.score) (\(diff.toParText))")
                             .font(.system(size: 12, weight: .semibold))
                             .tracking(2)
                             .foregroundStyle(diff <= 0 ? Theme.accent : Theme.dim)

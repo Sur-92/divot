@@ -9,27 +9,17 @@ struct StatsView: View {
 
     // MARK: - Round pools
 
+    /// Strict pool — per-hole fields are real. Used for averages,
+    /// FIR/GIR/putts/hole, low round, and the FIR/GIR/putts chart modes.
     private var played: [Round] {
-        // Strict pool — excludes reconstructed rounds (their FIR/GIR/putts
-        // are synthetic) and par-3 course rounds (not competitive golf).
-        // Used for averages, FIR/GIR/putts/hole, low round, and the
-        // FIR/GIR/putts chart modes.
-        rounds.filter {
-            $0.totalScore > 0 && !$0.isArchived
-                && !$0.isReconstructed && !$0.isParThreeCourse
-        }
+        rounds.filter(\.isStatsEligible)
     }
 
-    /// Permissive pool — every active round including reconstructed
-    /// ones. Round totals are always accurate (reconstructed scores were
-    /// distributed across holes to match the known total), so this pool
-    /// is safe for: the round count, the Last 5 list, and the score-
-    /// based chart modes (vs Par / 9 and Score / 9). Par-3 course rounds
-    /// are still excluded — par-3 play belongs in Practice, not the stats.
+    /// Permissive pool — every round with an accurate total (includes
+    /// reconstructed). Used for the round count, Last 5 list, and the
+    /// score-based chart modes (vs Par / 9 and Score / 9).
     private var allRounds: [Round] {
-        rounds.filter {
-            $0.totalScore > 0 && !$0.isArchived && !$0.isParThreeCourse
-        }
+        rounds.filter(\.isScoringEligible)
     }
 
     private var played18: [Round] { played.filter { $0.holeCount == 18 } }
@@ -354,7 +344,6 @@ struct StatsView: View {
     }
 
     private func recentRoundRow(_ round: Round) -> some View {
-        let sign = round.scoreToPar >= 0 ? "+" : ""
         let typeBadge = round.holeCount == 9 ? "9" : "18"
         return HStack(spacing: 14) {
             CourseLogo(assetName: round.course?.logoAssetName, height: 26)
@@ -392,7 +381,7 @@ struct StatsView: View {
                 .font(.system(size: 20, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(Theme.primaryText)
-            Text("\(sign)\(round.scoreToPar)")
+            Text(round.scoreToPar.toParText)
                 .font(.system(size: 13, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(round.scoreToPar <= 0 ? Theme.accent : Theme.dim)
@@ -631,10 +620,7 @@ struct StatsView: View {
         }
     }
 
-    private static func sign(_ n: Int) -> String {
-        if n == 0 { return "E" }
-        return n > 0 ? "+\(n)" : "\(n)"
-    }
+    private static func sign(_ n: Int) -> String { n.toParText }
 
     private static func dateLine(_ round: Round) -> String {
         let name = round.courseName.isEmpty ? "round" : round.courseName

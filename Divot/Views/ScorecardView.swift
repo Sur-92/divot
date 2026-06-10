@@ -84,8 +84,7 @@ struct ScorecardView: View {
             totalNumber(bunkers > 0 ? "\(bunkers)" : "—", width: 42)
             Color.clear.frame(width: 54)
             Color.clear.frame(maxWidth: .infinity)
-            let sign = toPar >= 0 ? "+" : ""
-            let text = totalScore > 0 ? "\(sign)\(toPar)" : "—"
+            let text = totalScore > 0 ? toPar.toParText : "—"
             Text(text)
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
                 .foregroundStyle(toPar <= 0 && totalScore > 0 ? Theme.accent : Theme.primaryText)
@@ -178,7 +177,7 @@ struct HoleRow: View {
                 .frame(width: 56, alignment: .center)
 
             // PAR (editable)
-            inlineInt(value: $hole.par, width: 44)
+            inlineInt(value: $hole.par, width: 44, clamp: 3...6)
 
             // HDCP (read-only, from course)
             Text(hole.handicapIndex > 0 ? "\(hole.handicapIndex)" : "—")
@@ -191,7 +190,7 @@ struct HoleRow: View {
                 ScoreMark(score: hole.score, par: hole.par)
                     .allowsHitTesting(false)
                 inlineInt(value: $hole.score, width: 58,
-                          color: scoreColor, bold: true, size: 14)
+                          color: scoreColor, bold: true, size: 14, clamp: 0...20)
             }
             .frame(width: 58)
 
@@ -206,15 +205,17 @@ struct HoleRow: View {
             // PUTTS (editable) — color-coded: 0 chip-in, 1 one-putt, 2 neutral, 3 warn, 4+ bad
             inlineInt(value: $hole.putts, width: 56,
                       color: puttsColor,
-                      bold: hole.putts >= 4)
+                      bold: hole.putts >= 4, clamp: 0...15)
 
             // PEN (editable) — red when > 0
             inlineInt(value: $hole.penalties, width: 40,
-                      color: hole.penalties > 0 ? Color(red: 0.92, green: 0.35, blue: 0.32) : Theme.dimmer)
+                      color: hole.penalties > 0 ? Color(red: 0.92, green: 0.35, blue: 0.32) : Theme.dimmer,
+                      clamp: 0...10)
 
             // SAND (editable) — amber when > 0
             inlineInt(value: $hole.bunkerShots, width: 42,
-                      color: hole.bunkerShots > 0 ? Theme.accent : Theme.dimmer)
+                      color: hole.bunkerShots > 0 ? Theme.accent : Theme.dimmer,
+                      clamp: 0...10)
 
             // DRIVE (tap → hole sheet to plot the landing)
             Button(action: onLogShots) {
@@ -248,8 +249,15 @@ struct HoleRow: View {
                            width: CGFloat,
                            color: Color = Theme.primaryText,
                            bold: Bool = false,
-                           size: CGFloat = 12) -> some View {
-        TextField("", value: value, format: .number)
+                           size: CGFloat = 12,
+                           clamp: ClosedRange<Int> = 0...99) -> some View {
+        // Clamp on write so a fat-fingered "4444" can't poison stats /
+        // the handicap differential. Reads pass through unchanged.
+        let bounded = Binding<Int>(
+            get: { value.wrappedValue },
+            set: { value.wrappedValue = Swift.min(Swift.max($0, clamp.lowerBound), clamp.upperBound) }
+        )
+        return TextField("", value: bounded, format: .number)
             .textFieldStyle(.plain)
             .multilineTextAlignment(.center)
             .font(.system(size: size, weight: bold ? .bold : .medium, design: .monospaced))

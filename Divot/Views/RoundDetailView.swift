@@ -536,7 +536,6 @@ struct RoundDetailView: View {
     }
 
     private var summaryPanel: some View {
-        let sign = round.scoreToPar >= 0 ? "+" : ""
         let penalties = round.holes.reduce(0) { $0 + $1.penalties }
         let bunkers = round.holes.reduce(0) { $0 + $1.bunkerShots }
         return LazyVGrid(columns: [
@@ -546,7 +545,7 @@ struct RoundDetailView: View {
         ], spacing: 12) {
             StatCard(label: "Total",
                      value: "\(round.totalScore)",
-                     sublabel: round.totalScore > 0 ? "\(sign)\(round.scoreToPar) vs par" : "in progress")
+                     sublabel: round.totalScore > 0 ? "\(round.scoreToPar.toParText) vs par" : "in progress")
             StatCard(label: "Fairways",
                      value: "\(round.fairwaysHit)/\(round.fairwayAttempts)",
                      sublabel: String(format: "%.0f%%", round.fairwayPercentage))

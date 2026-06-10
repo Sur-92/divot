@@ -213,7 +213,6 @@ struct RoundsListView: View {
 struct RoundRow: View {
     let round: Round
 
-    private var sign: String { round.scoreToPar >= 0 ? "+" : "" }
     private var scoreColor: Color {
         if round.totalScore == 0 { return Theme.dim }
         return round.scoreToPar <= 0 ? Theme.accent : Theme.primaryText
@@ -335,7 +334,7 @@ struct RoundRow: View {
                             .font(.system(size: 8, weight: .semibold))
                             .tracking(1.8)
                             .foregroundStyle(Theme.dim)
-                        Text("\(sign)\(round.scoreToPar)")
+                        Text(round.scoreToPar.toParText)
                             .font(.system(size: 26, weight: .semibold))
                             .monospacedDigit()
                             .foregroundStyle(scoreColor)
