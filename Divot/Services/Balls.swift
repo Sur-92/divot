@@ -163,6 +163,20 @@ enum Balls {
             take: "The e12's whole identity is straight flight — low driver spin and the Contact Force Dimple cut sidespin, which directly counters a push off the tee. Genuinely relevant to your miss. The catch is the ionomer cover: greenside spin is a clear step below the urethane balls here, so wedges release more. The opposite tradeoff from the Legato — pick it if tee-to-fairway accuracy matters to you more than stop-on-the-green spin. (This is the straight-flight e12; current model name is \"e12 Contact.\")"),
 
         Ball(
+            brand: "Callaway",
+            model: "Supersoft",
+            pieces: 2,
+            cover: .ionomer,
+            compression: 38,
+            driverSpin: .low,
+            greensideSpin: .low,
+            feel: .soft,
+            pricePerDozen: 20,
+            fit: .alt,
+            bestFor: "Slower swings & feel-seekers who want soft + straight on a budget",
+            take: "The softest, cheapest ball in the lineup — a 2-piece Trionomer (ionomer) distance ball at 38 compression, one of the lowest made. Marshmallow-soft feel, very low driver spin (straight, slice-resistant), and big value at $20. The honest caveat for YOUR game: it's built for slower swing speeds than your ~100 mph, and the ionomer cover gives the least greenside spin in the whole matrix — which trades away exactly the wedge bite your scramble-heavy scoring leans on. Great soft-feel value ball; not the one for a player whose short game is the engine."),
+
+        Ball(
             brand: "Titleist",
             model: "Pro V1x",
             pieces: 4,
