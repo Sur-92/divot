@@ -7,6 +7,52 @@ import SwiftUI
 struct BallsView: View {
     private var balls: [Ball] { Balls.all }
 
+    // MARK: - Sorting
+
+    enum SortColumn { case mfr, model, price, build, cover, comp, driver, greenside, feel, fit }
+    @State private var sortColumn: SortColumn?
+    @State private var sortAscending = true
+
+    /// Rows in the active sort order, or the curated default when unsorted.
+    private var sortedBalls: [Ball] {
+        guard let col = sortColumn else { return Balls.all }
+        let asc = Balls.all.sorted { lessThan($0, $1, by: col) }
+        return sortAscending ? asc : asc.reversed()
+    }
+
+    private func toggleSort(_ col: SortColumn) {
+        if sortColumn == col { sortAscending.toggle() }
+        else { sortColumn = col; sortAscending = true }
+    }
+
+    private func lessThan(_ a: Ball, _ b: Ball, by col: SortColumn) -> Bool {
+        switch col {
+        case .mfr:       return a.brand.localizedCaseInsensitiveCompare(b.brand) == .orderedAscending
+        case .model:     return a.model.localizedCaseInsensitiveCompare(b.model) == .orderedAscending
+        case .price:     return a.pricePerDozen < b.pricePerDozen
+        case .build:     return a.pieces < b.pieces
+        case .cover:     return a.cover.rawValue < b.cover.rawValue
+        case .comp:      return a.compression < b.compression
+        case .driver:    return rank(a.driverSpin) < rank(b.driverSpin)
+        case .greenside: return rank(a.greensideSpin) < rank(b.greensideSpin)
+        case .feel:      return rank(a.feel) < rank(b.feel)
+        case .fit:       return rank(a.fit) < rank(b.fit)
+        }
+    }
+
+    private func rank(_ t: SpinTier) -> Int {
+        switch t { case .low: return 0; case .mid: return 1; case .high: return 2 }
+    }
+    private func rank(_ f: FeelTier) -> Int {
+        switch f { case .soft: return 0; case .medium: return 1; case .firm: return 2 }
+    }
+    private func rank(_ f: FitStatus) -> Int {
+        switch f {
+        case .gamer: return 0; case .benchmark: return 1; case .alt: return 2
+        case .sleeper: return 3; case .avoid: return 4
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -59,9 +105,9 @@ struct BallsView: View {
             VStack(spacing: 0) {
                 matrixHeaderRow
                 Rectangle().fill(Theme.hairline.opacity(0.6)).frame(height: 1)
-                ForEach(Array(balls.enumerated()), id: \.offset) { idx, ball in
+                ForEach(Array(sortedBalls.enumerated()), id: \.element.model) { idx, ball in
                     matrixRow(ball: ball, isAlternate: idx.isMultiple(of: 2))
-                    if idx < balls.count - 1 {
+                    if idx < sortedBalls.count - 1 {
                         Rectangle().fill(Theme.hairline.opacity(0.4)).frame(height: 1)
                     }
                 }
@@ -72,9 +118,8 @@ struct BallsView: View {
         }
     }
 
-    // Column widths balance an 1100px window. Ball-name column flexes.
-    // Metric columns sized ~30% wider than the original draft so the
-    // info dot has breathing room and chip text doesn't truncate.
+    // Column widths balance an 1100px window. Model column flexes.
+    private let widthMfr: CGFloat = 112
     private let widthPrice: CGFloat = 73
     private let widthPieces: CGFloat = 65
     private let widthCover: CGFloat = 104
@@ -85,23 +130,25 @@ struct BallsView: View {
 
     private var matrixHeaderRow: some View {
         HStack(spacing: 8) {
-            metricHeader("BALL", help: HelpText.ball)
+            metricHeader("MFR", sort: .mfr, help: HelpText.manufacturer)
+                .frame(width: widthMfr, alignment: .leading)
+            metricHeader("MODEL", sort: .model, help: HelpText.model)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            metricHeader("$/DZ", help: HelpText.price)
+            metricHeader("$/DZ", sort: .price, help: HelpText.price)
                 .frame(width: widthPrice, alignment: .trailing)
-            metricHeader("BUILD", help: HelpText.build)
+            metricHeader("BUILD", sort: .build, help: HelpText.build)
                 .frame(width: widthPieces, alignment: .center)
-            metricHeader("COVER", help: HelpText.cover)
+            metricHeader("COVER", sort: .cover, help: HelpText.cover)
                 .frame(width: widthCover, alignment: .leading)
-            metricHeader("COMP", help: HelpText.compression)
+            metricHeader("COMP", sort: .comp, help: HelpText.compression)
                 .frame(width: widthComp, alignment: .center)
-            metricHeader("DRIVER", help: HelpText.driverSpin)
+            metricHeader("DRIVER", sort: .driver, help: HelpText.driverSpin)
                 .frame(width: widthSpin, alignment: .center)
-            metricHeader("GREEN", help: HelpText.greensideSpin)
+            metricHeader("GREEN", sort: .greenside, help: HelpText.greensideSpin)
                 .frame(width: widthSpin, alignment: .center)
-            metricHeader("FEEL", help: HelpText.feel)
+            metricHeader("FEEL", sort: .feel, help: HelpText.feel)
                 .frame(width: widthFeel, alignment: .center)
-            metricHeader("FIT", help: HelpText.fit)
+            metricHeader("FIT", sort: .fit, help: HelpText.fit)
                 .frame(width: widthFit, alignment: .center)
         }
         .padding(.horizontal, 14)
@@ -112,11 +159,10 @@ struct BallsView: View {
     /// time; clicking a second info dot moves the popover to that one.
     @State private var activeHelp: String?
 
-    /// Column-header label with a clickable info dot. Click reveals a
-    /// styled popover with the metric explanation; click outside or
-    /// click again to dismiss. Native hover tooltip is kept as a
-    /// fallback in case the user just hovers.
-    private func metricHeader(_ label: String, help: String) -> some View {
+    /// Column header: a clickable LABEL that sorts the matrix by this
+    /// column (click again to flip direction; an arrow shows the active
+    /// direction), plus an info dot that opens the metric explanation.
+    private func metricHeader(_ label: String, sort: SortColumn, help: String) -> some View {
         let isShowing = Binding<Bool>(
             get: { activeHelp == help },
             set: { showing in
@@ -124,19 +170,33 @@ struct BallsView: View {
                 else if activeHelp == help { activeHelp = nil }
             }
         )
+        let active = sortColumn == sort
         return HStack(spacing: 4) {
-            Text(label)
-                .font(.system(size: 9, weight: .bold))
-                .tracking(1.8)
-                .foregroundStyle(Theme.accent)
+            Button {
+                toggleSort(sort)
+            } label: {
+                HStack(spacing: 3) {
+                    Text(label)
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(1.8)
+                        .foregroundStyle(Theme.accent)
+                    Image(systemName: active
+                          ? (sortAscending ? "arrow.up" : "arrow.down")
+                          : "arrow.up.arrow.down")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(active ? Theme.accent : Theme.dim.opacity(0.5))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Sort by \(label)")
+
             Button {
                 isShowing.wrappedValue.toggle()
             } label: {
                 Image(systemName: "info.circle")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(activeHelp == help
-                                     ? Theme.accent
-                                     : Theme.dim)
+                    .foregroundStyle(activeHelp == help ? Theme.accent : Theme.dim)
                     .contentShape(Rectangle().inset(by: -4))
             }
             .buttonStyle(.plain)
@@ -178,9 +238,15 @@ struct BallsView: View {
 
     /// Tooltip copy for each column. Plain-English, one-paragraph each.
     private enum HelpText {
-        static let ball = """
-        The brand and model name. Cover + construction + compression \
-        together define how the ball behaves; the brand alone doesn't.
+        static let manufacturer = """
+        The brand that makes the ball. Brand alone doesn't define \
+        performance — cover, construction, and compression do — but it's \
+        handy for grouping (Titleist, Srixon, Callaway, DTC names, etc.).
+        """
+        static let model = """
+        The specific model within the brand. This is the line that \
+        actually determines behavior — e.g. Titleist's Pro V1 vs Pro V1x, \
+        or Srixon's Z-Star vs Q-Star Tour, differ a lot despite the badge.
         """
         static let price = """
         Current price per dozen in USD. Direct-to-consumer brands \
@@ -236,17 +302,20 @@ struct BallsView: View {
 
     private func matrixRow(ball: Ball, isAlternate: Bool) -> some View {
         HStack(spacing: 8) {
-            // Ball name (brand + model) — flex column
-            VStack(alignment: .leading, spacing: 1) {
-                Text(ball.brand.uppercased())
-                    .font(.system(size: 9, weight: .semibold))
-                    .tracking(1.5)
-                    .foregroundStyle(Theme.dim)
-                Text(ball.model)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.primaryText)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // Manufacturer
+            Text(ball.brand.uppercased())
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(1.2)
+                .foregroundStyle(Theme.dim)
+                .lineLimit(1)
+                .frame(width: widthMfr, alignment: .leading)
+
+            // Model — flex column
+            Text(ball.model)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.primaryText)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             // Price
             Text("$\(ball.pricePerDozen)")
