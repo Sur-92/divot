@@ -35,7 +35,7 @@ targets:
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Divot uses your location to mark and measure shot distances on the course."
         INFOPLIST_KEY_NSLocationUsageDescription: "Divot uses your location to mark and measure shot distances on the course."
         CURRENT_PROJECT_VERSION: 1
-        MARKETING_VERSION: "0.1"
+        MARKETING_VERSION: "2.0"
         SWIFT_EMIT_LOC_STRINGS: YES
         COMBINE_HIDPI_IMAGES: YES
 

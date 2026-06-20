@@ -184,8 +184,10 @@ struct ContentView: View {
             .padding(.bottom, 2)
     }
 
-    /// Real version from the bundle — "V 0.1 (137)" where the build number is
-    /// the CI run number, so you can tell exactly which build is running.
+    /// Real version from the bundle — e.g. "V 2.0 (40)" where the build
+    /// number is the CI run number, so you can tell exactly which build is
+    /// running. Marketing version is set in project.yml; tag releases to
+    /// match (git tag vX.Y.Z + a GitHub Release).
     private static var versionString: String {
         let info = Bundle.main.infoDictionary
         let short = info?["CFBundleShortVersionString"] as? String ?? "?"
