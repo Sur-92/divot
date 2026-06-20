@@ -3,7 +3,6 @@ import SwiftData
 
 struct ContentView: View {
     @State private var selection: NavSection? = .rounds
-    @State private var backgroundName = AppBackground.random()
 
     enum NavSection: String, CaseIterable, Identifiable, Hashable {
         case rounds = "Rounds"
@@ -62,23 +61,15 @@ struct ContentView: View {
             .background(detailBackdrop)
         }
         .background(appBackdrop)
-        .onChange(of: selection) { _, _ in
-            // Fresh scenery on every nav move — pick a different background.
-            withAnimation(.easeInOut(duration: 0.55)) {
-                backgroundName = AppBackground.random(excluding: backgroundName)
-            }
-        }
     }
 
     // MARK: - Backdrops
 
     private var appBackdrop: some View {
         ZStack {
-            Image(backgroundName)
+            Image("Background")
                 .resizable()
                 .scaledToFill()
-                .id(backgroundName)            // new identity → crossfade fires
-                .transition(.opacity)
             LinearGradient(
                 colors: [
                     .black.opacity(0.50),
@@ -276,24 +267,6 @@ struct SidebarRow: View {
         .onHover { isHovering = $0 }
         .animation(.easeOut(duration: 0.12), value: isSelected)
         .animation(.easeOut(duration: 0.12), value: isHovering)
-    }
-}
-
-// MARK: - Background catalog
-
-/// The pool of full-screen background images (asset-catalog names). The app
-/// picks one at random on each nav change. Add an imageset and list it here.
-enum AppBackground {
-    static let all = [
-        "Background", "Background2", "Background3",
-        "Background4", "Background5", "Background6",
-    ]
-
-    /// A random background, avoiding `current` so consecutive nav moves
-    /// always visibly change the scenery.
-    static func random(excluding current: String? = nil) -> String {
-        let pool = all.filter { $0 != current }
-        return pool.randomElement() ?? all.first ?? "Background"
     }
 }
 
