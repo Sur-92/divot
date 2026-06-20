@@ -1,21 +1,21 @@
 import SwiftUI
 import AppKit
 
-/// Curated reading page — golf teachers and pros with actionable
-/// "key teachings" pulled from their books and coaching legacies.
-/// Read-only content; all data lives in Services/Advisors.swift.
+/// The player's personal playbook — ONLY the teachings they've adopted
+/// (see `Advisors.playbook`). A lean format: advisor name + their selected
+/// lessons, no bios / books / eras. The full roster still lives in
+/// Services/Advisors.swift, so selections can be revised any time.
 struct AdvisorsView: View {
-    private var advisors: [Advisor] {
-        Advisors.order.compactMap { Advisors.byName[$0] }
-    }
+    private var advisors: [Advisor] { Advisors.playbookAdvisors }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
             ScrollView {
-                LazyVStack(spacing: 28) {
-                    ForEach(Array(advisors.enumerated()), id: \.element.name) { _, advisor in
-                        AdvisorCard(advisor: advisor)
+                LazyVStack(spacing: 16) {
+                    ForEach(advisors, id: \.name) { advisor in
+                        PlaybookCard(advisor: advisor,
+                                     teachings: Advisors.selectedTeachings(for: advisor))
                     }
                 }
                 .padding(.horizontal, 24)
@@ -33,7 +33,7 @@ struct AdvisorsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .tracking(4)
                     .foregroundStyle(Theme.accent)
-                Text("Wisdom from the people who taught the game.")
+                Text("Your playbook — the teachings you've taken to heart.")
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.dim)
                 Rectangle()
@@ -42,7 +42,7 @@ struct AdvisorsView: View {
                     .padding(.top, 2)
             }
             Spacer()
-            Text("\(advisors.count) ADVISORS")
+            Text("\(Advisors.playbookCount) TEACHINGS · \(advisors.count) VOICES")
                 .font(.system(size: 9, weight: .semibold))
                 .tracking(2)
                 .foregroundStyle(Theme.dim)
@@ -53,31 +53,61 @@ struct AdvisorsView: View {
     }
 }
 
-// MARK: - Advisor card
+// MARK: - Playbook card (one advisor, only their selected teachings)
 
-struct AdvisorCard: View {
+private struct PlaybookCard: View {
     let advisor: Advisor
+    let teachings: [Teaching]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            headerRow
+        VStack(alignment: .leading, spacing: 14) {
+            // Slim advisor header — photo + name + specialty only.
+            HStack(spacing: 12) {
+                GolferPhoto(name: advisor.name,
+                            asset: advisor.photoAssetName,
+                            size: 44)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(advisor.name)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Theme.primaryText)
+                    Text(advisor.specialty.rawValue.uppercased())
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(1.8)
+                        .foregroundStyle(Theme.accent)
+                }
+                Spacer()
+            }
+
             Rectangle().fill(Theme.hairline).frame(height: 1)
-            bioBlock
-            teachingsBlock
-            if !advisor.books.isEmpty {
-                Rectangle().fill(Theme.hairline).frame(height: 1)
-                booksBlock
+
+            // Selected teachings.
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(Array(teachings.enumerated()), id: \.offset) { _, t in
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.accent)
+                            .padding(.top, 1)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(t.title)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Theme.primaryText)
+                            Text(t.summary)
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.primaryText.opacity(0.85))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
+                        }
+                    }
+                }
             }
         }
-        .padding(20)
+        .padding(18)
         .background(
             ZStack {
                 Color.black.opacity(0.42)
                 LinearGradient(
-                    colors: [
-                        Color.white.opacity(0.03),
-                        Color.black.opacity(0.10)
-                    ],
+                    colors: [Color.white.opacity(0.03), Color.black.opacity(0.10)],
                     startPoint: .topLeading, endPoint: .bottomTrailing
                 )
             }
@@ -87,147 +117,6 @@ struct AdvisorCard: View {
                 .stroke(Theme.hairline, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 4))
-    }
-
-    // MARK: - Header row (photo + name + tagline)
-
-    private var headerRow: some View {
-        HStack(alignment: .top, spacing: 18) {
-            GolferPhoto(name: advisor.name,
-                        asset: advisor.photoAssetName,
-                        size: 84)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(advisor.name)
-                    .font(.system(size: 19, weight: .bold))
-                    .foregroundStyle(Theme.primaryText)
-
-                Text(advisor.era)
-                    .font(.system(size: 11, weight: .medium))
-                    .tracking(1.5)
-                    .foregroundStyle(Theme.dim)
-
-                Text(advisor.tagline)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 2)
-
-                HStack(spacing: 6) {
-                    specialtyChip(advisor.specialty)
-                    if let str = advisor.wikipediaURL, let url = URL(string: str) {
-                        Link(destination: url) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "arrow.up.right.square")
-                                    .font(.system(size: 9, weight: .semibold))
-                                Text("WIKIPEDIA")
-                                    .font(.system(size: 9, weight: .semibold))
-                                    .tracking(1.5)
-                            }
-                            .foregroundStyle(Theme.dim)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.top, 4)
-            }
-            Spacer()
-        }
-    }
-
-    private func specialtyChip(_ specialty: Specialty) -> some View {
-        Text(specialty.rawValue.uppercased())
-            .font(.system(size: 9, weight: .bold))
-            .tracking(1.8)
-            .foregroundStyle(.black)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Theme.accent)
-            )
-    }
-
-    // MARK: - Bio block
-
-    private var bioBlock: some View {
-        Text(advisor.bio)
-            .font(.system(size: 13))
-            .foregroundStyle(Theme.primaryText.opacity(0.92))
-            .fixedSize(horizontal: false, vertical: true)
-            .lineSpacing(2)
-    }
-
-    // MARK: - Teachings block
-
-    private var teachingsBlock: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "lightbulb.fill")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
-                Text("KEY TEACHINGS")
-                    .font(.system(size: 10, weight: .bold))
-                    .tracking(2.5)
-                    .foregroundStyle(Theme.accent)
-            }
-
-            VStack(alignment: .leading, spacing: 14) {
-                ForEach(Array(advisor.teachings.enumerated()), id: \.offset) { idx, teaching in
-                    teachingRow(index: idx + 1, teaching: teaching)
-                }
-            }
-        }
-    }
-
-    private func teachingRow(index: Int, teaching: Teaching) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            // Number badge
-            Text(String(format: "%02d", index))
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundStyle(Theme.accent.opacity(0.85))
-                .frame(width: 26, alignment: .leading)
-                .padding(.top, 1)
-
-            VStack(alignment: .leading, spacing: 5) {
-                Text(teaching.title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Theme.primaryText)
-                Text(teaching.summary)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Theme.primaryText.opacity(0.85))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(3)
-            }
-        }
-    }
-
-    // MARK: - Books block
-
-    private var booksBlock: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "book.fill")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(Theme.dim)
-                Text("NOTABLE WORKS")
-                    .font(.system(size: 10, weight: .bold))
-                    .tracking(2.5)
-                    .foregroundStyle(Theme.dim)
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                ForEach(advisor.books, id: \.self) { book in
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("·")
-                            .foregroundStyle(Theme.dim)
-                        Text(book)
-                            .font(.system(size: 12))
-                            .italic()
-                            .foregroundStyle(Theme.primaryText.opacity(0.78))
-                    }
-                }
-            }
-        }
     }
 }
 

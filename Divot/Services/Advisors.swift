@@ -47,6 +47,52 @@ enum Advisors {
         "Tiger Woods",
     ]
 
+    /// The player's personal playbook — the teachings they've adopted, keyed
+    /// by advisor name → set of selected teaching titles. The Advisors view
+    /// shows ONLY these. The full roster above is kept intact so selections
+    /// can be revised without re-entering content.
+    static let playbook: [String: Set<String>] = [
+        "Harvey Penick": [
+            "Take dead aim",
+            "Buy lessons, not equipment",
+            "Practice with a purpose",
+        ],
+        "Ben Hogan": [
+            "Build the stance, then the swing",
+        ],
+        "Jack Nicklaus": [
+            "Know the dead side",
+        ],
+        "Butch Harmon": [
+            "Don't fight your shape",
+            "Practice the shot you'll use",
+        ],
+        "Tiger Woods": [
+            "Practice with intent",
+            "Win the days before the week",
+            "Accept the miss, don't compound it",
+            "Train the body that swings the club",
+            "The six inches between your ears",
+        ],
+    ]
+
+    /// Advisors with at least one selected teaching, in display order.
+    static var playbookAdvisors: [Advisor] {
+        order.compactMap { byName[$0] }
+            .filter { !(playbook[$0.name] ?? []).isEmpty }
+    }
+
+    /// The selected teachings for one advisor, in their original order.
+    static func selectedTeachings(for advisor: Advisor) -> [Teaching] {
+        let picks = playbook[advisor.name] ?? []
+        return advisor.teachings.filter { picks.contains($0.title) }
+    }
+
+    /// Total count across the playbook.
+    static var playbookCount: Int {
+        playbook.values.reduce(0) { $0 + $1.count }
+    }
+
     static let byName: [String: Advisor] = [
 
         // MARK: Harvey Penick
