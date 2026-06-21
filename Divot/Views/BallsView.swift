@@ -33,19 +33,13 @@ struct BallsView: View {
         case .build:     return a.pieces < b.pieces
         case .cover:     return a.cover.rawValue < b.cover.rawValue
         case .comp:      return a.compression < b.compression
-        case .driver:    return rank(a.driverSpin) < rank(b.driverSpin)
-        case .greenside: return rank(a.greensideSpin) < rank(b.greensideSpin)
-        case .feel:      return rank(a.feel) < rank(b.feel)
+        case .driver:    return a.driverSpin < b.driverSpin
+        case .greenside: return a.greensideSpin < b.greensideSpin
+        case .feel:      return a.feel < b.feel
         case .fit:       return rank(a.fit) < rank(b.fit)
         }
     }
 
-    private func rank(_ t: SpinTier) -> Int {
-        switch t { case .low: return 0; case .mid: return 1; case .high: return 2 }
-    }
-    private func rank(_ f: FeelTier) -> Int {
-        switch f { case .soft: return 0; case .medium: return 1; case .firm: return 2 }
-    }
     private func rank(_ f: FitStatus) -> Int {
         switch f {
         case .gamer: return 0; case .benchmark: return 1; case .alt: return 2
@@ -272,23 +266,22 @@ struct BallsView: View {
         mid-90s number matches the ~100 mph driver swing in this app.
         """
         static let driverSpin = """
-        How much backspin the ball generates off the driver. \
-        LOW = less side spin on off-line strikes, longer rollout, \
-        better for high-spin players. MID = balanced and forgiving. \
-        HIGH = launches and stays in the air longer, amplifies any \
-        slice/hook tendency.
+        Backspin off the driver, rated 1–6. 1 = lowest spin (less side \
+        spin on off-line strikes, more rollout — good for a push/slice). \
+        6 = highest spin (more carry and height, but amplifies any curve). \
+        Estimated from cover, construction, and robot-test data.
         """
         static let greensideSpin = """
-        How much the ball checks up on pitch, chip, and wedge shots. \
-        HIGH = stops on the green where it lands — the signature of \
-        a urethane tour ball. LOW = rolls out after landing, worse \
-        for short-game scoring.
+        How much the ball checks up on pitch, chip, and wedge shots, \
+        rated 1–6. 6 = grabs and stops where it lands (urethane tour \
+        balls). 1 = rolls out, little bite (hard distance balls). For a \
+        scramble-heavy game, higher is what saves pars.
         """
         static let feel = """
-        Subjective sensation off the clubface and putter. SOFT = \
-        muted, "buttery" — feedback is in the hands. MEDIUM = \
-        balanced. FIRM = audible click, sharper feedback. Pure \
-        preference; not a performance number.
+        Sensation off the face and putter, rated 1–6. 1 = softest, \
+        "marshmallow" (low-compression balls). 6 = firmest, sharp click \
+        (high-compression). Pure preference — not a performance number. \
+        Tracks compression closely.
         """
         static let fit = """
         How well this ball matches THIS player's profile (14 hcp, \
@@ -343,16 +336,16 @@ struct BallsView: View {
                 .foregroundStyle(Theme.primaryText)
                 .frame(width: widthComp, alignment: .center)
 
-            // Driver spin tier
-            spinChip(ball.driverSpin)
+            // Driver spin (1–6)
+            scaleChip(ball.driverSpin)
                 .frame(width: widthSpin)
 
-            // Greenside spin tier
-            spinChip(ball.greensideSpin)
+            // Greenside spin (1–6)
+            scaleChip(ball.greensideSpin)
                 .frame(width: widthSpin)
 
-            // Feel
-            feelChip(ball.feel)
+            // Feel (1–6)
+            scaleChip(ball.feel)
                 .frame(width: widthFeel)
 
             // Fit status
@@ -364,34 +357,25 @@ struct BallsView: View {
         .background(isAlternate ? Color.white.opacity(0.02) : Color.clear)
     }
 
-    private func spinChip(_ tier: SpinTier) -> some View {
-        Text(tier.rawValue.uppercased())
-            .font(.system(size: 9, weight: .bold))
-            .tracking(1.5)
-            .foregroundStyle(spinColor(tier))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .overlay(RoundedRectangle(cornerRadius: 2)
-                .stroke(spinColor(tier).opacity(0.5), lineWidth: 1))
-    }
-
-    private func spinColor(_ tier: SpinTier) -> Color {
-        switch tier {
-        case .low:  return Theme.dim
-        case .mid:  return Theme.primaryText
-        case .high: return Theme.accent
+    /// A 1–6 rating shown as a compact filled gauge: a bar that fills left-
+    /// to-right in proportion to the value, with the number centered. More
+    /// fill = higher (more spin / firmer).
+    private func scaleChip(_ value: Int) -> some View {
+        let frac = max(0, min(6, value)) == 0 ? 0 : Double(value) / 6.0
+        return ZStack {
+            GeometryReader { geo in
+                Theme.accent.opacity(0.32)
+                    .frame(width: geo.size.width * frac)
+            }
+            Text("\(value)")
+                .font(.system(size: 11, weight: .bold))
+                .monospacedDigit()
+                .foregroundStyle(Theme.primaryText)
         }
-    }
-
-    private func feelChip(_ feel: FeelTier) -> some View {
-        Text(feel.rawValue.uppercased())
-            .font(.system(size: 9, weight: .bold))
-            .tracking(1.5)
-            .foregroundStyle(Theme.primaryText)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .overlay(RoundedRectangle(cornerRadius: 2)
-                .stroke(Theme.hairline, lineWidth: 1))
+        .frame(width: 46, height: 18)
+        .background(Color.white.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 3))
+        .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.hairline, lineWidth: 1))
     }
 
     @ViewBuilder
