@@ -7,37 +7,62 @@ import SwiftUI
 struct BallsView: View {
     private var balls: [Ball] { Balls.all }
 
-    // MARK: - Sorting
+    // MARK: - Sorting (multi-column, click-to-layer)
 
-    enum SortColumn { case mfr, model, price, build, cover, comp, driver, greenside, feel, fit }
-    @State private var sortColumn: SortColumn?
-    @State private var sortAscending = true
+    enum SortColumn: Equatable { case mfr, model, price, build, cover, comp, driver, greenside, feel, fit }
 
-    /// Rows in the active sort order, or the curated default when unsorted.
-    private var sortedBalls: [Ball] {
-        guard let col = sortColumn else { return Balls.all }
-        let asc = Balls.all.sorted { lessThan($0, $1, by: col) }
-        return sortAscending ? asc : asc.reversed()
-    }
+    /// Ordered active sort keys + direction. Empty = curated default order.
+    /// Activation order IS the priority — the first key is the primary sort,
+    /// later keys break ties.
+    @State private var sorts: [(col: SortColumn, asc: Bool)] = []
 
-    private func toggleSort(_ col: SortColumn) {
-        if sortColumn == col { sortAscending.toggle() }
-        else { sortColumn = col; sortAscending = true }
-    }
-
-    private func lessThan(_ a: Ball, _ b: Ball, by col: SortColumn) -> Bool {
-        switch col {
-        case .mfr:       return a.brand.localizedCaseInsensitiveCompare(b.brand) == .orderedAscending
-        case .model:     return a.model.localizedCaseInsensitiveCompare(b.model) == .orderedAscending
-        case .price:     return a.pricePerDozen < b.pricePerDozen
-        case .build:     return a.pieces < b.pieces
-        case .cover:     return a.cover.rawValue < b.cover.rawValue
-        case .comp:      return a.compression < b.compression
-        case .driver:    return a.driverSpin < b.driverSpin
-        case .greenside: return a.greensideSpin < b.greensideSpin
-        case .feel:      return a.feel < b.feel
-        case .fit:       return rank(a.fit) < rank(b.fit)
+    /// Cycle a column through: off → ascending → descending → off. A newly
+    /// activated column is appended at the lowest priority.
+    private func cycleSort(_ col: SortColumn) {
+        if let i = sorts.firstIndex(where: { $0.col == col }) {
+            if sorts[i].asc { sorts[i].asc = false } else { sorts.remove(at: i) }
+        } else {
+            sorts.append((col, true))
         }
+    }
+
+    /// 1-based priority of a column, or nil if it isn't in the sort.
+    private func sortPriority(_ col: SortColumn) -> Int? {
+        sorts.firstIndex(where: { $0.col == col }).map { $0 + 1 }
+    }
+    private func sortDirection(_ col: SortColumn) -> Bool? {
+        sorts.first(where: { $0.col == col })?.asc
+    }
+
+    /// Rows in the active multi-key sort order, or the curated default.
+    private var sortedBalls: [Ball] {
+        guard !sorts.isEmpty else { return Balls.all }
+        return Balls.all.sorted { a, b in
+            for s in sorts {
+                let c = compare(a, b, by: s.col)
+                if c != 0 { return s.asc ? c < 0 : c > 0 }
+            }
+            return false   // equal across all keys → stable
+        }
+    }
+
+    /// Three-way comparison for one column: negative if a<b, 0 if equal.
+    private func compare(_ a: Ball, _ b: Ball, by col: SortColumn) -> Int {
+        switch col {
+        case .mfr:       return order(a.brand.localizedCaseInsensitiveCompare(b.brand))
+        case .model:     return order(a.model.localizedCaseInsensitiveCompare(b.model))
+        case .cover:     return order(a.cover.rawValue.localizedCaseInsensitiveCompare(b.cover.rawValue))
+        case .price:     return a.pricePerDozen - b.pricePerDozen
+        case .build:     return a.pieces - b.pieces
+        case .comp:      return a.compression - b.compression
+        case .driver:    return a.driverSpin - b.driverSpin
+        case .greenside: return a.greensideSpin - b.greensideSpin
+        case .feel:      return a.feel - b.feel
+        case .fit:       return rank(a.fit) - rank(b.fit)
+        }
+    }
+    private func order(_ r: ComparisonResult) -> Int {
+        r == .orderedAscending ? -1 : (r == .orderedDescending ? 1 : 0)
     }
 
     private func rank(_ f: FitStatus) -> Int {
@@ -94,7 +119,31 @@ struct BallsView: View {
 
     private var matrixSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionLabel("Matrix", subtitle: "Head-to-head on price, build, and feel")
+            HStack(alignment: .bottom) {
+                SectionLabel(
+                    "Matrix",
+                    subtitle: sorts.isEmpty
+                        ? "Tap a header to sort; tap more headers to layer (①②③)"
+                        : "Tap a header again to flip direction, a third time to drop it"
+                )
+                Spacer()
+                if !sorts.isEmpty {
+                    Button {
+                        sorts.removeAll()
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.uturn.backward")
+                                .font(.system(size: 9, weight: .semibold))
+                            Text("CLEAR SORT")
+                                .font(.system(size: 9, weight: .semibold))
+                                .tracking(1)
+                        }
+                        .foregroundStyle(Theme.dim)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Reset to the default order")
+                }
+            }
 
             VStack(spacing: 0) {
                 matrixHeaderRow
@@ -164,26 +213,36 @@ struct BallsView: View {
                 else if activeHelp == help { activeHelp = nil }
             }
         )
-        let active = sortColumn == sort
+        let direction = sortDirection(sort)       // nil = inactive
+        let priority = sortPriority(sort)
         return HStack(spacing: 4) {
             Button {
-                toggleSort(sort)
+                cycleSort(sort)
             } label: {
                 HStack(spacing: 3) {
                     Text(label)
                         .font(.system(size: 9, weight: .bold))
                         .tracking(1.8)
                         .foregroundStyle(Theme.accent)
-                    Image(systemName: active
-                          ? (sortAscending ? "arrow.up" : "arrow.down")
-                          : "arrow.up.arrow.down")
+                    Image(systemName: direction == nil
+                          ? "arrow.up.arrow.down"
+                          : (direction! ? "arrow.up" : "arrow.down"))
                         .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(active ? Theme.accent : Theme.dim.opacity(0.5))
+                        .foregroundStyle(direction == nil ? Theme.dim.opacity(0.5) : Theme.accent)
+                    // Priority badge — only when layering (2+ active sorts).
+                    if sorts.count > 1, let p = priority {
+                        Text("\(p)")
+                            .font(.system(size: 7, weight: .bold))
+                            .monospacedDigit()
+                            .foregroundStyle(.black)
+                            .frame(width: 12, height: 12)
+                            .background(Circle().fill(Theme.accent))
+                    }
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help("Sort by \(label)")
+            .help("Sort by \(label) — tap to layer")
 
             Button {
                 isShowing.wrappedValue.toggle()
