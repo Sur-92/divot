@@ -167,8 +167,8 @@ struct BallsView: View {
     private let widthPieces: CGFloat = 65
     private let widthCover: CGFloat = 104
     private let widthComp: CGFloat = 78
-    private let widthSpin: CGFloat = 78
-    private let widthFeel: CGFloat = 83
+    private let widthSpin: CGFloat = 86
+    private let widthFeel: CGFloat = 90
     private let widthFit: CGFloat = 117
 
     private var matrixHeaderRow: some View {
@@ -325,22 +325,26 @@ struct BallsView: View {
         mid-90s number matches the ~100 mph driver swing in this app.
         """
         static let driverSpin = """
-        Backspin off the driver, rated 1–6. 1 = lowest spin (less side \
-        spin on off-line strikes, more rollout — good for a push/slice). \
-        6 = highest spin (more carry and height, but amplifies any curve). \
-        Estimated from cover, construction, and robot-test data.
+        Backspin off the driver, on a six-step scale: V.Low · Low · M.Low \
+        · M.High · High · V.High. Lower spin = less side spin on off-line \
+        strikes and more rollout (good for a push/slice); higher = more \
+        carry and height, but amplifies any curve. Where measured, driver \
+        spin comes from MyGolfSpy's 2025 robot test; otherwise estimated \
+        from cover and construction.
         """
         static let greensideSpin = """
-        How much the ball checks up on pitch, chip, and wedge shots, \
-        rated 1–6. 6 = grabs and stops where it lands (urethane tour \
-        balls). 1 = rolls out, little bite (hard distance balls). For a \
-        scramble-heavy game, higher is what saves pars.
+        How much the ball checks up on pitch, chip, and wedge shots, on a \
+        six-step scale: V.Low … V.High. V.High grabs and stops where it \
+        lands (urethane tour balls); V.Low rolls out with little bite \
+        (hard distance balls). For a scramble-heavy game, more is what \
+        saves pars.
         """
         static let feel = """
-        Sensation off the face and putter, rated 1–6. 1 = softest, \
-        "marshmallow" (low-compression balls). 6 = firmest, sharp click \
-        (high-compression). Pure preference — not a performance number. \
-        Tracks compression closely.
+        Sensation off the face and putter, on a six-step scale: V.Soft · \
+        Soft · M.Soft · M.Firm · Firm · V.Firm. Soft = muted, \
+        "marshmallow" (low compression); firm = sharp click (high \
+        compression). Pure preference — not a performance number. Tracks \
+        measured compression closely.
         """
         static let fit = """
         How well this ball matches THIS player's profile (14 hcp, \
@@ -395,16 +399,16 @@ struct BallsView: View {
                 .foregroundStyle(Theme.primaryText)
                 .frame(width: widthComp, alignment: .center)
 
-            // Driver spin (1–6)
-            scaleChip(ball.driverSpin)
+            // Driver spin (V.Low … V.High)
+            scaleChip(ball.driverSpin, .spin)
                 .frame(width: widthSpin)
 
-            // Greenside spin (1–6)
-            scaleChip(ball.greensideSpin)
+            // Greenside spin (V.Low … V.High)
+            scaleChip(ball.greensideSpin, .spin)
                 .frame(width: widthSpin)
 
-            // Feel (1–6)
-            scaleChip(ball.feel)
+            // Feel (V.Soft … V.Firm)
+            scaleChip(ball.feel, .feel)
                 .frame(width: widthFeel)
 
             // Fit status
@@ -416,22 +420,38 @@ struct BallsView: View {
         .background(isAlternate ? Color.white.opacity(0.02) : Color.clear)
     }
 
+    /// Which named scale a chip uses — spin (low→high) or feel (soft→firm).
+    enum ScaleKind {
+        case spin, feel
+        /// Labels for levels 1…6.
+        var labels: [String] {
+            switch self {
+            case .spin: return ["V.Low", "Low", "M.Low", "M.High", "High", "V.High"]
+            case .feel: return ["V.Soft", "Soft", "M.Soft", "M.Firm", "Firm", "V.Firm"]
+            }
+        }
+    }
+
     /// A 1–6 rating shown as a compact filled gauge: a bar that fills left-
-    /// to-right in proportion to the value, with the number centered. More
-    /// fill = higher (more spin / firmer).
-    private func scaleChip(_ value: Int) -> some View {
-        let frac = max(0, min(6, value)) == 0 ? 0 : Double(value) / 6.0
+    /// to-right in proportion to the level, with a graduated NAME centered
+    /// (V.Low … V.High for spin, V.Soft … V.Firm for feel). More fill =
+    /// higher (more spin / firmer). The value still sorts numerically.
+    private func scaleChip(_ value: Int, _ kind: ScaleKind) -> some View {
+        let v = max(1, min(6, value))
+        let frac = Double(v) / 6.0
         return ZStack {
             GeometryReader { geo in
                 Theme.accent.opacity(0.32)
                     .frame(width: geo.size.width * frac)
             }
-            Text("\(value)")
-                .font(.system(size: 11, weight: .bold))
-                .monospacedDigit()
+            Text(kind.labels[v - 1])
+                .font(.system(size: 9.5, weight: .bold))
                 .foregroundStyle(Theme.primaryText)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .frame(width: 46, height: 18)
+        .frame(maxWidth: .infinity)
+        .frame(height: 18)
         .background(Color.white.opacity(0.05))
         .clipShape(RoundedRectangle(cornerRadius: 3))
         .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.hairline, lineWidth: 1))
