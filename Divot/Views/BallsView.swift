@@ -432,16 +432,31 @@ struct BallsView: View {
         }
     }
 
-    /// A 1–6 rating shown as a compact filled gauge: a bar that fills left-
-    /// to-right in proportion to the level, with a graduated NAME centered
-    /// (V.Low … V.High for spin, V.Soft … V.Firm for feel). More fill =
-    /// higher (more spin / firmer). The value still sorts numerically.
+    /// Cool→warm color ramp for the 1–6 scales: slate-blue (lowest/softest)
+    /// through teal/green to gold/amber/orange (highest/firmest). Reads as
+    /// "amount," not good/bad — so it's neutral for feel (pure preference).
+    private func scaleColor(_ v: Int) -> Color {
+        switch max(1, min(6, v)) {
+        case 1:  return Color(red: 0.42, green: 0.56, blue: 0.74)  // slate blue
+        case 2:  return Color(red: 0.30, green: 0.64, blue: 0.66)  // teal
+        case 3:  return Color(red: 0.45, green: 0.70, blue: 0.46)  // green
+        case 4:  return Color(red: 0.85, green: 0.70, blue: 0.34)  // gold
+        case 5:  return Theme.accent                                // amber
+        default: return Color(red: 0.91, green: 0.45, blue: 0.22)  // orange
+        }
+    }
+
+    /// A 1–6 rating shown as a compact, color-coded filled gauge: a bar
+    /// that fills left-to-right in proportion to the level (colored by the
+    /// cool→warm ramp), with a graduated NAME centered (V.Low … V.High for
+    /// spin, V.Soft … V.Firm for feel). The value still sorts numerically.
     private func scaleChip(_ value: Int, _ kind: ScaleKind) -> some View {
         let v = max(1, min(6, value))
         let frac = Double(v) / 6.0
+        let c = scaleColor(v)
         return ZStack {
             GeometryReader { geo in
-                Theme.accent.opacity(0.32)
+                c.opacity(0.42)
                     .frame(width: geo.size.width * frac)
             }
             Text(kind.labels[v - 1])
@@ -449,12 +464,13 @@ struct BallsView: View {
                 .foregroundStyle(Theme.primaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
+                .shadow(color: .black.opacity(0.5), radius: 1, y: 0.5)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 18)
-        .background(Color.white.opacity(0.05))
+        .background(c.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 3))
-        .overlay(RoundedRectangle(cornerRadius: 3).stroke(Theme.hairline, lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 3).stroke(c.opacity(0.5), lineWidth: 1))
     }
 
     @ViewBuilder
