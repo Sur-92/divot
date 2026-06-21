@@ -446,31 +446,24 @@ struct BallsView: View {
         }
     }
 
-    /// A 1–6 rating shown as a compact, color-coded filled gauge: a bar
-    /// that fills left-to-right in proportion to the level (colored by the
-    /// cool→warm ramp), with a graduated NAME centered (V.Low … V.High for
-    /// spin, V.Soft … V.Firm for feel). The value still sorts numerically.
+    /// A 1–6 rating shown as a compact, color-coded chip: a graduated NAME
+    /// (V.Low … V.High for spin, V.Soft … V.Firm for feel) over a solid
+    /// level-colored tint from the cool→warm ramp. Color carries the
+    /// magnitude; the value still sorts numerically.
     private func scaleChip(_ value: Int, _ kind: ScaleKind) -> some View {
         let v = max(1, min(6, value))
-        let frac = Double(v) / 6.0
         let c = scaleColor(v)
-        return ZStack {
-            GeometryReader { geo in
-                c.opacity(0.42)
-                    .frame(width: geo.size.width * frac)
-            }
-            Text(kind.labels[v - 1])
-                .font(.system(size: 9.5, weight: .bold))
-                .foregroundStyle(Theme.primaryText)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .shadow(color: .black.opacity(0.5), radius: 1, y: 0.5)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 18)
-        .background(c.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 3))
-        .overlay(RoundedRectangle(cornerRadius: 3).stroke(c.opacity(0.5), lineWidth: 1))
+        return Text(kind.labels[v - 1])
+            .font(.system(size: 9.5, weight: .bold))
+            .foregroundStyle(Theme.primaryText)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .shadow(color: .black.opacity(0.5), radius: 1, y: 0.5)
+            .frame(maxWidth: .infinity)
+            .frame(height: 18)
+            .background(c.opacity(0.22))
+            .clipShape(RoundedRectangle(cornerRadius: 3))
+            .overlay(RoundedRectangle(cornerRadius: 3).stroke(c.opacity(0.55), lineWidth: 1))
     }
 
     @ViewBuilder
