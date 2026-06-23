@@ -16,7 +16,7 @@ struct AddPrepView: View {
 
     @State private var selectedCourse: Course?
     @State private var keyInput = ""
-    @State private var hasKey = KeychainStore.hasAnthropicKey
+    @State private var hasKey = KeyStore.hasAnthropicKey
     @State private var editingKey = false
     @State private var isGenerating = false
     @State private var errorText: String?
@@ -133,7 +133,7 @@ struct AddPrepView: View {
                 Image(systemName: "key.fill")
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.accent.opacity(0.8))
-                Text("Anthropic API key saved")
+                Text("Anthropic API key saved on this Mac")
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.dim)
                 Spacer()
@@ -153,9 +153,10 @@ struct AddPrepView: View {
                     .padding(.vertical, 10)
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(Theme.hairline, lineWidth: 1))
                 HStack(spacing: 6) {
-                    Text("Stored only in your macOS Keychain. Get one at")
+                    Text("Stored only on this Mac (Divot's app folder) — never in the app or on GitHub. Get one at")
                         .font(.system(size: 11))
                         .foregroundStyle(Theme.dim)
+                        .fixedSize(horizontal: false, vertical: true)
                     Link("console.anthropic.com", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Theme.accent)
@@ -230,18 +231,18 @@ struct AddPrepView: View {
     private func saveKey() {
         let trimmed = keyInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        if KeychainStore.setAnthropicKey(trimmed) {
+        if KeyStore.setAnthropicKey(trimmed) {
             hasKey = true
             editingKey = false
             keyInput = ""
             errorText = nil
         } else {
-            errorText = "Couldn't save the key to the Keychain."
+            errorText = "Couldn't save the key to Divot's app folder."
         }
     }
 
     private func generate() {
-        guard let course = selectedCourse, let key = KeychainStore.anthropicKey else {
+        guard let course = selectedCourse, let key = KeyStore.anthropicKey else {
             errorText = "Pick a course and add your API key first."
             return
         }

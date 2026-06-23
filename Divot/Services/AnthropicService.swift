@@ -26,8 +26,8 @@ enum AnthropicError: LocalizedError {
 }
 
 /// Calls the Anthropic Messages API to turn a pre-round brief into three
-/// concrete advisories. The API key is the user's own, read from the
-/// Keychain by the caller and passed in here.
+/// concrete advisories. The API key is the user's own, read from local
+/// storage (`KeyStore`) by the caller and passed in here.
 enum AnthropicService {
     static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     static let apiVersion = "2023-06-01"

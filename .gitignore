@@ -50,3 +50,8 @@ secrets.plist
 *.db
 *.db-shm
 *.db-wal
+
+# API keys / secrets — never commit (key lives only in the app container)
+anthropic-key.txt
+*.apikey
+Divot/Secrets.swift
