@@ -606,6 +606,20 @@ enum Balls {
             take: "A firm 2-piece Surlyn distance rock — built only to fly straight and far and survive cart paths. Lowest greenside in the matrix alongside the XL Distance; wrong fit for a short-game player. (Compression estimated.)"),
 
         Ball(
+            brand: "Honma",
+            model: "BERES 5S Plus",
+            pieces: 6,
+            cover: .urethane,
+            compression: 70,
+            driverSpin: 3,
+            greensideSpin: 5,
+            feel: 2,
+            pricePerDozen: 55,
+            fit: .sleeper,
+            bestFor: "Soft-feel players wanting a luxury six-layer urethane that flatters a moderate swing",
+            take: "The exotic flagship — Honma's BERES is Japanese luxury (the brand that sells gold-plated drivers), and this is a rare six-layer ball (the most layers in the matrix) under a soft urethane cover. On paper it lands right in your wheelhouse: soft feel, low-ish driver spin, real greenside bite. Two honest caveats — the specs here are estimated (Honma doesn't publish BERES numbers and this reads like a marketplace listing, so treat them as a best guess), and you pay a luxury premium for performance a Q-Star Tour or AVX likely matches for half the price."),
+
+        Ball(
             brand: "Titleist",
             model: "Pro V1x",
             pieces: 4,
