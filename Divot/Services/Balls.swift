@@ -616,8 +616,8 @@ enum Balls {
             feel: 2,
             pricePerDozen: 55,
             fit: .sleeper,
-            bestFor: "Soft-feel players wanting a luxury six-layer urethane that flatters a moderate swing",
-            take: "The exotic flagship — Honma's BERES is Japanese luxury (the brand that sells gold-plated drivers), and this is a rare six-layer ball (the most layers in the matrix) under a soft urethane cover. On paper it lands right in your wheelhouse: soft feel, low-ish driver spin, real greenside bite. Two honest caveats — the specs here are estimated (Honma doesn't publish BERES numbers and this reads like a marketplace listing, so treat them as a best guess), and you pay a luxury premium for performance a Q-Star Tour or AVX likely matches for half the price."),
+            bestFor: "Soft-feel players wanting a luxury six-layer urethane with an alignment aid that flatters a moderate swing",
+            take: "The exotic flagship — Honma's BERES is Japanese luxury, and this is a rare six-layer ball (the most layers in the matrix) under a soft urethane cover, with a dual-line alignment aid like Callaway's Triple Track. Its design intent is the combo that fits you: low long-game spin off the tee (friendly to your push) plus a soft urethane cover for greenside bite and feel. Read the marketing with skepticism, though — claims like '23% more energy transfer' are physically meaningless (driver COR is capped by rule; no legal ball is 23% hotter), and Honma publishes no real BERES specs, so the numbers here are estimates. A genuinely fun luxury/exotic ball that sits in your wheelhouse — but a $32 Q-Star Tour or the AVX likely delivers the same low-spin/soft/high-bite recipe for half the price."),
 
         Ball(
             brand: "Titleist",
