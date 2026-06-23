@@ -22,6 +22,7 @@ struct DivotApp: App {
             CourseHole.self,
             BagClub.self,
             PracticeSession.self,
+            PrepPlan.self,
             VideoBookmark.self,
             TrainingExercise.self,
             TrainingSession.self,
