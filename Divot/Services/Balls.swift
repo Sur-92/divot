@@ -52,7 +52,7 @@ enum Balls {
             pricePerDozen: 32,
             fit: .gamer,
             bestFor: "~100 mph swings wanting tour-ball performance at half the price",
-            take: "The DTC ball that genuinely competes with Pro V1 on construction (3-piece, real urethane) at $23/dozen less. 85 compression matches a ~100 mph swing speed cleanly. The one fair caveat is QC consistency vs. the majors — one reviewer noted a defective ball in 24. First gamer in current testing rotation."),
+            take: "The DTC ball that genuinely competes with Pro V1 on construction (3-piece, real urethane) at $23/dozen less. 85 compression matches a ~100 mph swing speed cleanly. The one fair caveat is QC consistency vs. the majors — one reviewer noted a defective ball in 24. FIELD NOTE (on-course testing): the greenside check comes up a step short of what a short-game-driven player wants on the 60–100 — confirming its 'High' rating, not 'V.High'. The value tier's bite ceiling, not its price, is the Legato's real limit; a V.High-greenside ball (Chrome Tour) is the upgrade if check is the priority."),
 
         Ball(
             brand: "Titleist",
