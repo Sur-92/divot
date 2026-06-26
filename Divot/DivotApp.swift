@@ -48,6 +48,9 @@ struct DivotApp: App {
         Task { @MainActor in
             AuditService.shared.configure(container: container)
         }
+        // Auto-backup on quit — pushes the session you just finished (only
+        // when something actually changed). The manual Backup button remains.
+        BackupTrigger.installAutoBackupOnQuit(container: container)
         self.container = container
     }
 

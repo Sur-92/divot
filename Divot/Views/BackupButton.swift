@@ -56,11 +56,8 @@ struct BackupButton: View {
 
     private func backup() {
         modelContext.saveOrReport()
-        guard let docs else { message = "Backup unavailable"; isError = true; return }
-        let trigger = docs.appendingPathComponent(".backup-trigger")
-        let stamp = "\(Date().timeIntervalSince1970)"
-        // Non-atomic in-place write so launchd's WatchPaths reliably fires.
-        try? stamp.data(using: .utf8)?.write(to: trigger)
+        guard docs != nil else { message = "Backup unavailable"; isError = true; return }
+        BackupTrigger.fire()
 
         working = true
         message = "Backing up…"

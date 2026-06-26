@@ -35,8 +35,12 @@ extension ModelContext {
     /// banner. Safe to call from any context — the banner update hops to
     /// the main actor.
     func saveOrReport(_ context: @autoclosure () -> String = "") {
+        let hadChanges = hasChanges
         do {
             try save()
+            // A real persisted change means this session is worth backing up
+            // when the app quits.
+            if hadChanges { BackupTrigger.dataChangedThisSession = true }
         } catch {
             let ctx = context()
             NSLog("Divot save failed [\(ctx)]: \(error)")
