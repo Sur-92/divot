@@ -21,6 +21,26 @@ struct Ball {
     let take: String                // 2–4 sentences of opinion
 }
 
+extension Ball {
+    /// Best-to-worst rank score for THIS player's profile (push / right miss,
+    /// ~100–105 mph, forged irons, short-game-driven scoring). Priorities, in
+    /// order of weight:
+    ///   1. Greenside check — the scoring engine, weighted highest.
+    ///   2. Low driver spin — tames the push off the tee.
+    ///   3. Compression near ~85 (his speed) — penalize firm 100+ and very soft.
+    ///   4. Softer feel — a mild nod to the forged-iron preference.
+    ///   5. Price — a light tiebreaker; check outranks savings.
+    /// Higher = better fit. Drives the default order of the matrix.
+    var fitScore: Double {
+        let green    = Double(greensideSpin) * 10           // 10…60, dominant
+        let driver   = Double(driverSpin) * 4               // tee-spin penalty
+        let compPen  = abs(Double(compression) - 85) * 0.15 // distance from ~85
+        let feelPen  = Double(max(0, feel - 3)) * 1.0       // penalize firm only
+        let pricePen = Double(pricePerDozen) * 0.05         // value tiebreaker
+        return green - driver - compPen - feelPen - pricePen
+    }
+}
+
 enum CoverMaterial: String {
     case urethane = "Urethane"
     case ionomer  = "Ionomer"

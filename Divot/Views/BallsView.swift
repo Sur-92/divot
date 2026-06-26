@@ -34,9 +34,19 @@ struct BallsView: View {
         sorts.first(where: { $0.col == col })?.asc
     }
 
-    /// Rows in the active multi-key sort order, or the curated default.
+    /// Balls ranked best→worst for this player's profile (see Ball.fitScore).
+    private var rankedBalls: [Ball] {
+        Balls.all.sorted { $0.fitScore > $1.fitScore }
+    }
+    /// model → 1-based fit rank, so each row can show its standing even when
+    /// the user re-sorts by another column.
+    private var fitRank: [String: Int] {
+        Dictionary(uniqueKeysWithValues: rankedBalls.enumerated().map { ($1.model, $0 + 1) })
+    }
+
+    /// Rows in the active multi-key sort order, or the fit ranking by default.
     private var sortedBalls: [Ball] {
-        guard !sorts.isEmpty else { return Balls.all }
+        guard !sorts.isEmpty else { return rankedBalls }
         return Balls.all.sorted { a, b in
             for s in sorts {
                 let c = compare(a, b, by: s.col)
@@ -123,8 +133,8 @@ struct BallsView: View {
                 SectionLabel(
                     "Matrix",
                     subtitle: sorts.isEmpty
-                        ? "Tap a header to sort; tap more headers to layer (①②③)"
-                        : "Tap a header again to flip direction, a third time to drop it"
+                        ? "Ranked best→worst for your game · tap a header to re-sort (CLEAR SORT to return to the ranking)"
+                        : "Tap a header again to flip direction, a third time to drop it · CLEAR SORT restores the ranking"
                 )
                 Spacer()
                 if !sorts.isEmpty {
@@ -162,6 +172,7 @@ struct BallsView: View {
     }
 
     // Column widths balance an 1100px window. Model column flexes.
+    private let widthRank: CGFloat = 30
     private let widthMfr: CGFloat = 112
     private let widthPrice: CGFloat = 73
     private let widthPieces: CGFloat = 65
@@ -173,6 +184,11 @@ struct BallsView: View {
 
     private var matrixHeaderRow: some View {
         HStack(spacing: 8) {
+            Text("#")
+                .font(.system(size: 9, weight: .bold))
+                .tracking(1)
+                .foregroundStyle(Theme.accent)
+                .frame(width: widthRank, alignment: .center)
             metricHeader("MFR", sort: .mfr, help: HelpText.manufacturer)
                 .frame(width: widthMfr, alignment: .leading)
             metricHeader("MODEL", sort: .model, help: HelpText.model)
@@ -358,6 +374,13 @@ struct BallsView: View {
 
     private func matrixRow(ball: Ball, isAlternate: Bool) -> some View {
         HStack(spacing: 8) {
+            // Fit rank (best→worst for this player)
+            Text("\(fitRank[ball.model] ?? 0)")
+                .font(.system(size: 11, weight: .bold))
+                .monospacedDigit()
+                .foregroundStyle(Theme.dim)
+                .frame(width: widthRank, alignment: .center)
+
             // Manufacturer
             Text(ball.brand.uppercased())
                 .font(.system(size: 10, weight: .semibold))
