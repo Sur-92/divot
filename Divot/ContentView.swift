@@ -106,12 +106,12 @@ struct ContentView: View {
                         .tag(item)
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+                        .listRowInsets(EdgeInsets(top: 1, leading: 0, bottom: 1, trailing: 0))
                 }
             }
             .scrollContentBackground(.hidden)
             .listStyle(.sidebar)
-            .environment(\.defaultMinListRowHeight, 38)
+            .environment(\.defaultMinListRowHeight, 32)
             .offset(y: -75)
 
             Spacer(minLength: 0)
@@ -251,7 +251,7 @@ struct SidebarRow: View {
             }
             .padding(.leading, 12)
             .padding(.trailing, 10)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
             .background {
                 if isSelected {
                     LinearGradient(
