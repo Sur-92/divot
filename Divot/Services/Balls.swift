@@ -39,6 +39,36 @@ extension Ball {
         let pricePen = Double(pricePerDozen) * 0.05         // value tiebreaker
         return green - driver - compPen - feelPen - pricePen
     }
+
+    /// Letter fit grade derived from `fitScore` — eight tiers, A (best fit
+    /// for this player) down through G, then AVOID (wrong ball for a
+    /// short-game-driven profile). Computed, so it can never disagree with
+    /// the ranking.
+    var fitGrade: FitGrade {
+        switch fitScore {
+        case 41...:   return .a
+        case 37..<41: return .b
+        case 34..<37: return .c
+        case 32..<34: return .d
+        case 29..<32: return .e
+        case 24..<29: return .f
+        case 14..<24: return .g
+        default:      return .avoid
+        }
+    }
+}
+
+/// Fit grade for this player, A (best) → AVOID (worst). Display only; the
+/// underlying ordering is `Ball.fitScore`.
+enum FitGrade: Int, CaseIterable {
+    case a, b, c, d, e, f, g, avoid
+    var label: String {
+        switch self {
+        case .a: return "A"; case .b: return "B"; case .c: return "C"
+        case .d: return "D"; case .e: return "E"; case .f: return "F"
+        case .g: return "G"; case .avoid: return "AVOID"
+        }
+    }
 }
 
 enum CoverMaterial: String {

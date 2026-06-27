@@ -68,18 +68,11 @@ struct BallsView: View {
         case .driver:    return a.driverSpin - b.driverSpin
         case .greenside: return a.greensideSpin - b.greensideSpin
         case .feel:      return a.feel - b.feel
-        case .fit:       return rank(a.fit) - rank(b.fit)
+        case .fit:       return a.fitGrade.rawValue - b.fitGrade.rawValue
         }
     }
     private func order(_ r: ComparisonResult) -> Int {
         r == .orderedAscending ? -1 : (r == .orderedDescending ? 1 : 0)
-    }
-
-    private func rank(_ f: FitStatus) -> Int {
-        switch f {
-        case .gamer: return 0; case .benchmark: return 1; case .alt: return 2
-        case .sleeper: return 3; case .avoid: return 4
-        }
     }
 
     var body: some View {
@@ -180,7 +173,7 @@ struct BallsView: View {
     private let widthComp: CGFloat = 78
     private let widthSpin: CGFloat = 86
     private let widthFeel: CGFloat = 90
-    private let widthFit: CGFloat = 117
+    private let widthFit: CGFloat = 96
 
     private var matrixHeaderRow: some View {
         HStack(spacing: 8) {
@@ -363,12 +356,12 @@ struct BallsView: View {
         measured compression closely.
         """
         static let fit = """
-        How well this ball matches THIS player's profile (14 hcp, \
-        ~100 mph swing, push pattern, forged irons). GAMER = \
-        currently in the bag. BENCHMARK = the standard others get \
-        judged against. ALT = strong alternative, trial-worthy. \
-        SLEEPER = less obvious pick worth trying. AVOID = wrong \
-        fit for this profile.
+        Letter grade for how well this ball fits THIS player (14 hcp, \
+        ~100–105 mph, push pattern, forged irons, short-game-driven), \
+        computed from the same fit score that drives the # ranking — so \
+        the grade and the rank always agree. A = optimal fit, down \
+        through G, then AVOID (wrong ball for a short-game-driven \
+        profile). IN BAG marks the ball you currently game.
         """
     }
 
@@ -435,7 +428,7 @@ struct BallsView: View {
                 .frame(width: widthFeel)
 
             // Fit status
-            fitBadge(ball.fit)
+            gradeBadge(ball)
                 .frame(width: widthFit)
         }
         .padding(.horizontal, 14)
@@ -489,50 +482,43 @@ struct BallsView: View {
             .overlay(RoundedRectangle(cornerRadius: 3).stroke(c.opacity(0.55), lineWidth: 1))
     }
 
+    /// Green→red ramp for the A…AVOID fit grade (here good/bad IS the axis,
+    /// so the warm/cool semantics flip vs. the spin/feel scale).
+    private func gradeColor(_ g: FitGrade) -> Color {
+        switch g {
+        case .a:     return Color(red: 0.30, green: 0.74, blue: 0.42)  // green
+        case .b:     return Color(red: 0.56, green: 0.76, blue: 0.34)  // green-lime
+        case .c:     return Color(red: 0.80, green: 0.76, blue: 0.30)  // yellow
+        case .d:     return Color(red: 0.90, green: 0.70, blue: 0.26)  // gold
+        case .e:     return Color(red: 0.93, green: 0.58, blue: 0.20)  // amber
+        case .f:     return Color(red: 0.90, green: 0.46, blue: 0.22)  // orange
+        case .g:     return Color(red: 0.86, green: 0.36, blue: 0.24)  // red-orange
+        case .avoid: return Color(red: 0.80, green: 0.30, blue: 0.28)  // red
+        }
+    }
+
+    /// FIT cell: the computed letter grade (A…AVOID) plus a small IN BAG tag
+    /// on the ball currently gamed.
     @ViewBuilder
-    private func fitBadge(_ fit: FitStatus) -> some View {
-        switch fit {
-        case .gamer:
-            Text(fit.rawValue)
-                .font(.system(size: 9, weight: .bold))
-                .tracking(1.8)
+    private func gradeBadge(_ ball: Ball) -> some View {
+        let g = ball.fitGrade
+        HStack(spacing: 5) {
+            Text(g.label)
+                .font(.system(size: g == .avoid ? 8 : 11, weight: .bold))
+                .tracking(g == .avoid ? 1 : 0)
                 .foregroundStyle(.black)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(RoundedRectangle(cornerRadius: 2).fill(Theme.accent))
-        case .benchmark:
-            Text(fit.rawValue)
-                .font(.system(size: 9, weight: .bold))
-                .tracking(1.8)
-                .foregroundStyle(Theme.accent)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.accent, lineWidth: 1))
-        case .alt:
-            Text(fit.rawValue)
-                .font(.system(size: 9, weight: .bold))
-                .tracking(1.8)
-                .foregroundStyle(Theme.dim)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.hairline, lineWidth: 1))
-        case .sleeper:
-            Text(fit.rawValue)
-                .font(.system(size: 9, weight: .bold))
-                .tracking(1.8)
-                .foregroundStyle(Theme.dim)
-                .italic()
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.dim.opacity(0.5), lineWidth: 1))
-        case .avoid:
-            Text(fit.rawValue)
-                .font(.system(size: 9, weight: .bold))
-                .tracking(1.8)
-                .foregroundStyle(Color.red.opacity(0.75))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .overlay(RoundedRectangle(cornerRadius: 2).stroke(Color.red.opacity(0.5), lineWidth: 1))
+                .padding(.horizontal, g == .avoid ? 7 : 0)
+                .frame(minWidth: 22, minHeight: 18)
+                .background(RoundedRectangle(cornerRadius: 3).fill(gradeColor(g)))
+            if ball.fit == .gamer {
+                Text("IN BAG")
+                    .font(.system(size: 8, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(Theme.accent)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .overlay(RoundedRectangle(cornerRadius: 2).stroke(Theme.accent.opacity(0.6), lineWidth: 1))
+            }
         }
     }
 
@@ -560,7 +546,7 @@ struct BallsView: View {
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(Theme.primaryText)
                 Spacer()
-                fitBadge(ball.fit)
+                gradeBadge(ball)
             }
 
             HStack(spacing: 6) {
