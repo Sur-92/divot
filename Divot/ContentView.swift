@@ -97,8 +97,6 @@ struct ContentView: View {
             brandHeader
                 .offset(y: -50)
 
-            gradientDivider
-
             // Nav items
             List(selection: $selection) {
                 ForEach(NavSection.allCases) { item in
